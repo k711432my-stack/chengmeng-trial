@@ -5549,10 +5549,42 @@ function checkActivation(){
 // TRIAL SYSTEM
 // ══════════════════════════════════════
 function initTrial(){
-  if(!localStorage.getItem(TRIAL_KEY)){
+  const isFirst=!localStorage.getItem(TRIAL_KEY);
+  if(isFirst){
     localStorage.setItem(TRIAL_KEY, Date.now().toString());
+    // Show trial notice on first launch
+    showTrialNotice();
   }
   checkTrialExpiry();
+}
+
+function showTrialNotice(){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99998;display:flex;align-items:center;justify-content:center;padding:24px;';
+  const box=document.createElement('div');
+  box.style.cssText='background:#fff;border-radius:24px;max-width:340px;width:100%;padding:24px;text-align:center;';
+  box.innerHTML=`
+    <div style="font-size:48px;margin-bottom:10px">🐻</div>
+    <div style="font-size:17px;font-weight:900;color:#2A8A6A;margin-bottom:8px">歡迎試用！</div>
+    <div style="background:#FFF9E6;border:2px solid #FFD080;border-radius:14px;padding:14px;margin-bottom:14px;text-align:left;font-size:12px;line-height:1.9">
+      <div style="font-weight:900;color:#7A5A00;margin-bottom:6px">⚠️ 試用版說明</div>
+      <div style="color:#555;">
+        ・試用期限：<b>7天</b><br>
+        ・試用版資料<b>不會永久保留</b><br>
+        ・僅限 1 個孩子使用<br>
+        ・部分功能受限
+      </div>
+    </div>
+    <div style="font-size:11px;color:#888;margin-bottom:14px;line-height:1.7">
+      正式版 NT$399 買斷，資料永久保留<br>最多5個孩子・全部功能解鎖
+    </div>
+    <button id="trial-notice-ok" style="width:100%;padding:13px;border-radius:13px;border:none;background:linear-gradient(135deg,#5BC4A0,#2A8A6A);color:#fff;font-family:Nunito,sans-serif;font-size:13px;font-weight:900;cursor:pointer">
+      🐻 我了解，開始試用！
+    </button>
+  `;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  document.getElementById('trial-notice-ok').onclick=()=>overlay.remove();
 }
 
 function checkTrialExpiry(){
@@ -5569,131 +5601,59 @@ function showTrialBanner(daysLeft){
   const b=document.createElement('div');
   b.id='trial-banner';
   b.style.cssText='position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,#FFB830,#FF8C00);color:#fff;padding:8px 14px;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:space-between;z-index:8000;';
-  b.innerHTML='<span>🐻 試用版・剩餘 <b style="font-size:14px">'+daysLeft+'</b> 天</span><div style="display:flex;gap:6px"><button onclick="showActivationInput()" style="background:rgba(255,255,255,.25);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:8px;padding:5px 10px;font-family:Nunito,sans-serif;font-size:10px;font-weight:800;cursor:pointer">輸入啟動碼</button><button onclick="showUpgradeModal()" style="background:#fff;color:#FF8C00;border:none;border-radius:8px;padding:5px 10px;font-family:Nunito,sans-serif;font-size:11px;font-weight:900;cursor:pointer">升級 →</button></div>';
+  b.innerHTML='<span>🐻 試用版・剩餘 <b style="font-size:13px">'+daysLeft+'</b> 天</span>'
+    +'<div style="display:flex;gap:5px">'
+    +'<button onclick="exportTrialData()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:4px 8px;font-family:Nunito,sans-serif;font-size:10px;font-weight:800;cursor:pointer">📥 備份</button>'
+    +'<button onclick="showUpgradeModal()" style="background:#fff;color:#FF8C00;border:none;border-radius:7px;padding:4px 9px;font-family:Nunito,sans-serif;font-size:10px;font-weight:900;cursor:pointer">升級 →</button>'
+    +'</div>';
   document.body.prepend(b);
   const app=document.getElementById('app');
-  if(app) app.style.paddingTop='36px';
+  if(app) app.style.paddingTop='38px';
 }
 
 function showTrialExpired(){
-  // Remove any existing overlay
   const old=document.getElementById('trial-expired-overlay');
   if(old) old.remove();
-  
   const overlay=document.createElement('div');
   overlay.id='trial-expired-overlay';
   overlay.style.cssText='position:fixed;inset:0;background:linear-gradient(145deg,#1A1A2E,#2A2A4E);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;';
-  
   const box=document.createElement('div');
   box.style.cssText='background:#fff;border-radius:28px;max-width:360px;width:100%;padding:28px 22px;text-align:center;';
   box.innerHTML=`
     <div style="font-size:64px;margin-bottom:10px">🐻</div>
-    <div style="font-size:20px;font-weight:900;color:#2D1B0E;margin-bottom:6px">試用期已結束</div>
-    <div style="font-size:12px;color:#888;margin-bottom:16px;line-height:1.7">
-      感謝你的試用！孩子的資料都保留著<br>
-      輸入啟動碼即可繼續使用所有功能 🐻
+    <div style="font-size:20px;font-weight:900;color:#2D1B0E;margin-bottom:8px">試用期已結束</div>
+    <div style="font-size:12px;color:#888;margin-bottom:16px;line-height:1.8">
+      感謝你的7天體驗！<br>
+      正式版資料永久保留，功能全面解鎖。<br>
+      <b style="color:#2A8A6A">購買後24小時內收到專屬網址</b>
     </div>
-    
-    <!-- Activation code input -->
-    <div style="background:#F8F4F0;border-radius:16px;padding:16px;margin-bottom:14px">
-      <div style="font-size:11px;font-weight:800;color:#888;margin-bottom:8px;letter-spacing:1px">已有啟動碼？直接輸入升級！</div>
-      <input id="expired-code-input" type="text" placeholder="CM-XXXX-XXX"
-        style="width:100%;padding:12px;border-radius:10px;border:2.5px solid #E0D4C4;background:#fff;font-family:Nunito,monospace;font-size:16px;font-weight:900;text-align:center;letter-spacing:2px;color:#2D1B0E;outline:none;text-transform:uppercase;margin-bottom:8px"
-        oninput="this.value=this.value.toUpperCase()">
-      <div id="expired-code-err" style="color:#F06B6B;font-size:11px;font-weight:700;min-height:16px;margin-bottom:6px"></div>
-      <button onclick="checkExpiredCode()" 
-        style="width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#5BC4A0,#2A8A6A);color:#fff;font-family:Nunito,sans-serif;font-size:14px;font-weight:900;cursor:pointer">
-        🐻 輸入啟動碼解鎖
-      </button>
+    <div style="background:#F8F4F0;border-radius:14px;padding:14px;margin-bottom:14px;font-size:12px;text-align:left">
+      <div style="font-weight:900;color:#2D1B0E;margin-bottom:8px">💳 國泰銀行轉帳</div>
+      <div style="color:#555;line-height:2">銀行代碼：013<br>帳號：<b style="font-family:monospace">699512521618</b><br>戶名：賴佳欣<br>金額：<b style="color:#2A8A6A;font-size:15px">NT$399</b></div>
     </div>
-    
-    <div style="color:#aaa;font-size:11px;margin-bottom:12px">── 還沒有啟動碼？ ──</div>
-    
-    <button onclick="showUpgradeModal()"
-      style="width:100%;padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,#FFB830,#FF8C00);color:#fff;font-family:Nunito,sans-serif;font-size:14px;font-weight:900;cursor:pointer;margin-bottom:8px">
-      💳 立即升級 NT$399
+    <a href="https://line.me/R/ti/p/@730oquwu" target="_blank"
+      style="display:block;padding:14px;border-radius:13px;background:#06C755;color:#fff;text-align:center;font-weight:900;font-size:14px;text-decoration:none;margin-bottom:8px">
+      💬 LINE 聯絡 Kelly 購買
+    </a>
+    <button id="exp-copy-btn"
+      style="width:100%;padding:12px;border-radius:13px;border:2px solid #2A8A6A;background:#fff;color:#2A8A6A;font-family:Nunito,sans-serif;font-size:12px;font-weight:900;cursor:pointer;margin-bottom:8px">
+      📋 複製轉帳帳號
     </button>
     <div style="font-size:10px;color:#aaa;">買斷制・第一年更新免費・最多5個孩子</div>
   `;
   overlay.appendChild(box);
   document.body.appendChild(overlay);
-  setTimeout(()=>document.getElementById('expired-code-input')?.focus(),300);
+  document.getElementById('exp-copy-btn').onclick=function(){
+    navigator.clipboard&&navigator.clipboard.writeText('699512521618');
+    this.textContent='✅ 已複製！';setTimeout(()=>this.textContent='📋 複製轉帳帳號',2000);
+  };
 }
 
-function showActivationInput(){
-  // Show a floating input for users who already paid
-  const old=document.getElementById('act-float');
-  if(old){old.style.display='flex';return;}
-  const d=document.createElement('div');
-  d.id='act-float';
-  d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px';
-  d.innerHTML=`<div style="background:#fff;border-radius:22px;padding:24px;max-width:340px;width:100%;text-align:center">
-    <div style="font-size:36px;margin-bottom:8px">🐻</div>
-    <div style="font-size:16px;font-weight:900;color:#2A8A6A;margin-bottom:6px">輸入啟動碼升級</div>
-    <div style="font-size:11px;color:#888;margin-bottom:14px">付款後收到的啟動碼，輸入後立即升級為正式版！資料全部保留。</div>
-    <input id="float-code-input" type="text" placeholder="CM-XXXX-XXX"
-      style="width:100%;padding:12px;border-radius:10px;border:2.5px solid #E0D4C4;font-family:Nunito,monospace;font-size:16px;font-weight:900;text-align:center;letter-spacing:2px;text-transform:uppercase;outline:none;margin-bottom:8px"
-      oninput="this.value=this.value.toUpperCase()">
-    <div id="float-code-err" style="color:#F06B6B;font-size:11px;min-height:16px;margin-bottom:8px"></div>
-    <button onclick="checkFloatCode()" style="width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#5BC4A0,#2A8A6A);color:#fff;font-family:Nunito,sans-serif;font-size:14px;font-weight:900;cursor:pointer;margin-bottom:8px">🐻 解鎖正式版</button>
-    <button onclick="document.getElementById('act-float').style.display='none'" style="width:100%;padding:10px;border-radius:12px;border:none;background:#F0F0F0;color:#888;font-family:Nunito,sans-serif;font-size:12px;cursor:pointer">取消</button>
-  </div>`;
-  document.body.appendChild(d);
-  setTimeout(()=>document.getElementById('float-code-input')?.focus(),200);
-}
 
-function checkFloatCode(){
-  const input=document.getElementById('float-code-input');
-  const err=document.getElementById('float-code-err');
-  if(!input)return;
-  const entered=input.value.trim().toUpperCase();
-  if(entered===ACTIVATION_CODE.toUpperCase()){
-    localStorage.setItem(ACT_KEY,ACTIVATION_CODE);
-    localStorage.removeItem(TRIAL_KEY);
-    sfxTaskConfirmed();
-    document.getElementById('act-float').style.display='none';
-    // Remove trial banner
-    const banner=document.getElementById('trial-banner');
-    if(banner)banner.remove();
-    sfxWelcome();
-    toast('🎉 升級成功！歡迎使用正式版！');
-    updateUI();
-  } else {
-    if(input)input.style.borderColor='#F06B6B';
-    if(err)err.textContent='啟動碼不正確，請重新確認';
-    sfxPinError();
-  }
-}
 
-function checkExpiredCode(){
-  const input=document.getElementById('expired-code-input');
-  const err=document.getElementById('expired-code-err');
-  if(!input) return;
-  const entered=input.value.trim().toUpperCase();
-  const correct=ACTIVATION_CODE.toUpperCase();
-  if(entered===correct){
-    // Unlock!
-    localStorage.setItem(ACT_KEY, ACTIVATION_CODE);
-    localStorage.removeItem(TRIAL_KEY); // Remove trial timer
-    input.style.borderColor='#2A8A6A';
-    if(err) err.textContent='';
-    sfxTaskConfirmed();
-    setTimeout(()=>{
-      const overlay=document.getElementById('trial-expired-overlay');
-      if(overlay){
-        overlay.style.transition='opacity 0.5s';
-        overlay.style.opacity='0';
-        setTimeout(()=>{overlay.remove(); sfxWelcome(); toast('🎉 升級成功！歡迎使用正式版！');updateUI();},500);
-      }
-    },600);
-  } else {
-    input.style.borderColor='#F06B6B';
-    if(err) err.textContent='啟動碼不正確，請重新確認';
-    sfxPinError();
-    input.style.animation='shake 0.4s';
-    setTimeout(()=>input.style.animation='',500);
-  }
-}
+
+
+
 
 function showUpgradeModal(){
   const old=document.getElementById('upgrade-modal');
@@ -5736,6 +5696,96 @@ function showUpgradeModal(){
     }
   }
 })();
+
+// ══════════════════════════════════════
+// TRIAL DATA EXPORT / IMPORT
+// ══════════════════════════════════════
+function exportTrialData(){
+  const data={
+    exportDate: new Date().toISOString(),
+    version: 'trial-export-v1',
+    kids: kids,
+    earnLog: JSON.parse(localStorage.getItem('cm_earn')||'[]'),
+    dreams: JSON.parse(localStorage.getItem('cm_dreams')||'[]'),
+    charData: JSON.parse(localStorage.getItem('cm_char')||'{}'),
+    rates: JSON.parse(localStorage.getItem('cm_r3')||'{}'),
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='澄萌理財寶貝_試用資料_'+new Date().toLocaleDateString('zh-TW').replace(/\//g,'-')+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✅ 資料已下載！升級正式版後可以匯入');
+}
+
+function showExportReminder(){
+  const d=document.createElement('div');
+  d.id='export-reminder';
+  d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px';
+  d.innerHTML=`<div style="background:#fff;border-radius:24px;max-width:360px;width:100%;padding:28px 22px;text-align:center">
+    <div style="font-size:52px;margin-bottom:10px">🐻</div>
+    <div style="font-size:18px;font-weight:900;color:#2D1B0E;margin-bottom:8px">試用期已結束</div>
+    <div style="background:#FFF9E6;border-radius:14px;padding:14px;margin-bottom:16px;font-size:12px;color:#7A5A00;line-height:1.8;text-align:left">
+      ⚠️ <b>試用版資料說明：</b><br>
+      試用版資料僅供體驗，不會永久保留。<br>
+      如果想保留孩子的試用記錄，<br>
+      請先下載資料，升級後可以匯入！
+    </div>
+    <button onclick="exportTrialData()" style="width:100%;padding:13px;border-radius:13px;border:none;background:linear-gradient(135deg,#5BC4A0,#2A8A6A);color:#fff;font-family:Nunito,sans-serif;font-size:14px;font-weight:900;cursor:pointer;margin-bottom:8px">
+      📥 下載試用資料（備份）
+    </button>
+    <button onclick="showUpgradeModal()" style="width:100%;padding:13px;border-radius:13px;border:none;background:linear-gradient(135deg,#FFB830,#FF8C00);color:#fff;font-family:Nunito,sans-serif;font-size:14px;font-weight:900;cursor:pointer;margin-bottom:8px">
+      🎉 升級正式版 NT$399
+    </button>
+    <div style="font-size:10px;color:#aaa">升級後你會收到新的專屬網址，可以匯入試用資料繼續使用</div>
+  </div>`;
+  document.body.appendChild(d);
+}
+
+
+function showTrialDisclaimer(){
+  const shown=localStorage.getItem('cm_trial_disclaimer');
+  if(shown) return;
+  const d=document.createElement('div');
+  d.style.cssText='position:fixed;inset:0;background:linear-gradient(145deg,#1D6B50,#2A8A6A);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px';
+  d.innerHTML=`<div style="background:#fff;border-radius:24px;max-width:360px;width:100%;padding:28px 22px;text-align:center">
+    <div style="font-size:56px;margin-bottom:10px">🐻</div>
+    <div style="font-size:20px;font-weight:900;color:#2A8A6A;margin-bottom:6px">歡迎試用！</div>
+    <div style="font-size:13px;color:#2D1B0E;font-weight:800;margin-bottom:12px">澄萌你理財寶貝</div>
+    <div style="background:#FFF9E6;border-radius:14px;padding:14px;margin-bottom:16px;font-size:12px;color:#7A5A00;line-height:1.9;text-align:left">
+      📋 <b>試用版說明：</b><br>
+      ・試用期 <b>7 天</b><br>
+      ・試用版資料<b>不會永久保留</b><br>
+      ・升級正式版前可以<b>下載備份資料</b><br>
+      ・正式版可匯入試用資料繼續使用<br>
+      ・本 App 為純教育模擬工具
+    </div>
+    <div style="background:#F0FBF5;border-radius:14px;padding:12px;margin-bottom:16px;font-size:12px;color:#1D6B50">
+      ✅ 試用完整後，升級只需 <b>NT$399</b><br>
+      買斷制・第一年更新免費
+    </div>
+    <button onclick="this.closest('div[style]').remove();localStorage.setItem('cm_trial_disclaimer','1')" 
+      style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#5BC4A0,#2A8A6A);color:#fff;font-family:Nunito,sans-serif;font-size:15px;font-weight:900;cursor:pointer">
+      🐻 開始試用！
+    </button>
+  </div>`;
+  document.body.appendChild(d);
+}
+
+
+// ── Browser float button ──
+function showBrowserTip(){
+  document.getElementById('browser-tip-modal').style.display='flex';
+}
+(function(){
+  // Show for ALL users (not just in-app browser) since user requested it
+  setTimeout(()=>{
+    const btn=document.getElementById('browser-float-btn');
+    if(btn) btn.style.display='block';
+  },2000);
+})();
 // ══════════════════════════════════════
 // INIT
 // ══════════════════════════════════════
@@ -5751,7 +5801,7 @@ checkPendingRiskEvents();
 initAudio();
 sfxWelcome();
 initOnboarding();
-if(IS_TRIAL) initTrial();
+if(IS_TRIAL){initTrial();showTrialDisclaimer();}
 
 // PWA
 if('serviceWorker' in navigator){
@@ -6386,6 +6436,42 @@ if('serviceWorker' in navigator){
     style="background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.5);color:#fff;padding:6px 18px;border-radius:20px;font-family:Nunito,sans-serif;font-size:12px;font-weight:800;cursor:pointer">
     我知道了 ✓
   </button>
+</div>
+
+<!-- 右下角瀏覽器提醒浮動按鈕 -->
+<div id="browser-float-btn" style="position:fixed;bottom:80px;right:14px;z-index:7999;display:none">
+  <div style="position:relative">
+    <button onclick="showBrowserTip()" 
+      style="background:#FF8C00;color:#fff;border:none;border-radius:50px;padding:8px 14px;font-family:Nunito,sans-serif;font-size:11px;font-weight:900;cursor:pointer;box-shadow:0 4px 16px rgba(255,140,0,0.4);display:flex;align-items:center;gap:5px">
+      🌐 用預設瀏覽器開啟
+    </button>
+    <div style="position:absolute;right:14px;bottom:-6px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #FF8C00"></div>
+  </div>
+</div>
+
+<div id="browser-tip-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;padding:24px">
+  <div style="background:#fff;border-radius:20px;padding:22px;max-width:340px;width:100%;text-align:center">
+    <div style="font-size:36px;margin-bottom:8px">📱</div>
+    <div style="font-size:16px;font-weight:900;color:#FF8C00;margin-bottom:10px">建議用預設瀏覽器開啟</div>
+    <div style="font-size:12px;color:#555;line-height:1.9;margin-bottom:16px;text-align:left">
+      📌 <b>iOS（iPhone）：</b><br>
+      點右下角 <b>「⋯」</b> → 選 <b>「在 Safari 中開啟」</b><br><br>
+      📌 <b>Android：</b><br>
+      點右上角 <b>「⋮」</b> → 選 <b>「用瀏覽器開啟」</b><br><br>
+      這樣才能正常使用所有功能、<br>加入主畫面書籤！
+    </div>
+    <button onclick="document.getElementById('browser-tip-modal').style.display='none'" 
+      style="width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,#5BC4A0,#2A8A6A);color:#fff;font-family:Nunito,sans-serif;font-size:13px;font-weight:900;cursor:pointer">
+      我知道了 ✓
+    </button>
+  </div>
+</div>
+
+
+<div id="browser-tip-fab" onclick="this.style.display='none';localStorage.setItem('br_ok','1')"
+  style="display:none;position:fixed;bottom:80px;right:14px;z-index:9000;background:linear-gradient(135deg,#FF8C00,#FF6B00);color:#fff;border-radius:14px;padding:9px 12px;font-size:10px;font-weight:800;box-shadow:0 4px 14px rgba(255,100,0,.4);cursor:pointer;max-width:160px;text-align:center;line-height:1.5">
+  🌐 建議用<b>預設瀏覽器</b>開啟<br>
+  <span style="font-size:9px;opacity:.8">點此關閉</span>
 </div>
 </body>
 </html>
