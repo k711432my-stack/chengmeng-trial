@@ -1,0 +1,26 @@
+{
+  "name": "澄萌你理財寶貝",
+  "short_name": "澄萌理財",
+  "description": "學理財・賺分數・變聰明！",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFF9F0",
+  "theme_color": "#C0516E",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "finance"],
+  "lang": "zh-TW"
+}

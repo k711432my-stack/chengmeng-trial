@@ -5569,17 +5569,130 @@ function showTrialBanner(daysLeft){
   const b=document.createElement('div');
   b.id='trial-banner';
   b.style.cssText='position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,#FFB830,#FF8C00);color:#fff;padding:8px 14px;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:space-between;z-index:8000;';
-  b.innerHTML='<span>🐻 試用版・剩餘 <b style="font-size:14px">'+daysLeft+'</b> 天</span><button onclick="showUpgradeModal()" style="background:#fff;color:#FF8C00;border:none;border-radius:8px;padding:5px 12px;font-family:Nunito,sans-serif;font-size:11px;font-weight:900;cursor:pointer">升級 NT$399 →</button>';
+  b.innerHTML='<span>🐻 試用版・剩餘 <b style="font-size:14px">'+daysLeft+'</b> 天</span><div style="display:flex;gap:6px"><button onclick="showActivationInput()" style="background:rgba(255,255,255,.25);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:8px;padding:5px 10px;font-family:Nunito,sans-serif;font-size:10px;font-weight:800;cursor:pointer">輸入啟動碼</button><button onclick="showUpgradeModal()" style="background:#fff;color:#FF8C00;border:none;border-radius:8px;padding:5px 10px;font-family:Nunito,sans-serif;font-size:11px;font-weight:900;cursor:pointer">升級 →</button></div>';
   document.body.prepend(b);
   const app=document.getElementById('app');
   if(app) app.style.paddingTop='36px';
 }
 
 function showTrialExpired(){
+  // Remove any existing overlay
+  const old=document.getElementById('trial-expired-overlay');
+  if(old) old.remove();
+  
   const overlay=document.createElement('div');
+  overlay.id='trial-expired-overlay';
   overlay.style.cssText='position:fixed;inset:0;background:linear-gradient(145deg,#1A1A2E,#2A2A4E);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;';
-  overlay.innerHTML='<div style="background:#fff;border-radius:28px;max-width:360px;width:100%;padding:32px 24px;text-align:center;"><div style="font-size:64px;margin-bottom:12px">🐻</div><div style="font-size:20px;font-weight:900;color:#2D1B0E;margin-bottom:8px">試用期已結束</div><div style="font-size:13px;color:#888;margin-bottom:20px;line-height:1.7">感謝試用！付款後24小時內<br>Kelly 會傳送專屬網址+啟動碼給你</div><button onclick="showUpgradeModal()" style="width:100%;padding:16px;border-radius:14px;border:none;background:linear-gradient(135deg,#FFB830,#FF8C00);color:#fff;font-family:Nunito,sans-serif;font-size:16px;font-weight:900;cursor:pointer;margin-bottom:12px">🎉 立即升級 NT$399</button><div style="font-size:11px;color:#aaa;">買斷制・最多5個孩子・永久使用</div></div>';
+  
+  const box=document.createElement('div');
+  box.style.cssText='background:#fff;border-radius:28px;max-width:360px;width:100%;padding:28px 22px;text-align:center;';
+  box.innerHTML=`
+    <div style="font-size:64px;margin-bottom:10px">🐻</div>
+    <div style="font-size:20px;font-weight:900;color:#2D1B0E;margin-bottom:6px">試用期已結束</div>
+    <div style="font-size:12px;color:#888;margin-bottom:16px;line-height:1.7">
+      感謝你的試用！孩子的資料都保留著<br>
+      輸入啟動碼即可繼續使用所有功能 🐻
+    </div>
+    
+    <!-- Activation code input -->
+    <div style="background:#F8F4F0;border-radius:16px;padding:16px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:800;color:#888;margin-bottom:8px;letter-spacing:1px">已有啟動碼？直接輸入升級！</div>
+      <input id="expired-code-input" type="text" placeholder="CM-XXXX-XXX"
+        style="width:100%;padding:12px;border-radius:10px;border:2.5px solid #E0D4C4;background:#fff;font-family:Nunito,monospace;font-size:16px;font-weight:900;text-align:center;letter-spacing:2px;color:#2D1B0E;outline:none;text-transform:uppercase;margin-bottom:8px"
+        oninput="this.value=this.value.toUpperCase()">
+      <div id="expired-code-err" style="color:#F06B6B;font-size:11px;font-weight:700;min-height:16px;margin-bottom:6px"></div>
+      <button onclick="checkExpiredCode()" 
+        style="width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#5BC4A0,#2A8A6A);color:#fff;font-family:Nunito,sans-serif;font-size:14px;font-weight:900;cursor:pointer">
+        🐻 輸入啟動碼解鎖
+      </button>
+    </div>
+    
+    <div style="color:#aaa;font-size:11px;margin-bottom:12px">── 還沒有啟動碼？ ──</div>
+    
+    <button onclick="showUpgradeModal()"
+      style="width:100%;padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,#FFB830,#FF8C00);color:#fff;font-family:Nunito,sans-serif;font-size:14px;font-weight:900;cursor:pointer;margin-bottom:8px">
+      💳 立即升級 NT$399
+    </button>
+    <div style="font-size:10px;color:#aaa;">買斷制・第一年更新免費・最多5個孩子</div>
+  `;
+  overlay.appendChild(box);
   document.body.appendChild(overlay);
+  setTimeout(()=>document.getElementById('expired-code-input')?.focus(),300);
+}
+
+function showActivationInput(){
+  // Show a floating input for users who already paid
+  const old=document.getElementById('act-float');
+  if(old){old.style.display='flex';return;}
+  const d=document.createElement('div');
+  d.id='act-float';
+  d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px';
+  d.innerHTML=`<div style="background:#fff;border-radius:22px;padding:24px;max-width:340px;width:100%;text-align:center">
+    <div style="font-size:36px;margin-bottom:8px">🐻</div>
+    <div style="font-size:16px;font-weight:900;color:#2A8A6A;margin-bottom:6px">輸入啟動碼升級</div>
+    <div style="font-size:11px;color:#888;margin-bottom:14px">付款後收到的啟動碼，輸入後立即升級為正式版！資料全部保留。</div>
+    <input id="float-code-input" type="text" placeholder="CM-XXXX-XXX"
+      style="width:100%;padding:12px;border-radius:10px;border:2.5px solid #E0D4C4;font-family:Nunito,monospace;font-size:16px;font-weight:900;text-align:center;letter-spacing:2px;text-transform:uppercase;outline:none;margin-bottom:8px"
+      oninput="this.value=this.value.toUpperCase()">
+    <div id="float-code-err" style="color:#F06B6B;font-size:11px;min-height:16px;margin-bottom:8px"></div>
+    <button onclick="checkFloatCode()" style="width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#5BC4A0,#2A8A6A);color:#fff;font-family:Nunito,sans-serif;font-size:14px;font-weight:900;cursor:pointer;margin-bottom:8px">🐻 解鎖正式版</button>
+    <button onclick="document.getElementById('act-float').style.display='none'" style="width:100%;padding:10px;border-radius:12px;border:none;background:#F0F0F0;color:#888;font-family:Nunito,sans-serif;font-size:12px;cursor:pointer">取消</button>
+  </div>`;
+  document.body.appendChild(d);
+  setTimeout(()=>document.getElementById('float-code-input')?.focus(),200);
+}
+
+function checkFloatCode(){
+  const input=document.getElementById('float-code-input');
+  const err=document.getElementById('float-code-err');
+  if(!input)return;
+  const entered=input.value.trim().toUpperCase();
+  if(entered===ACTIVATION_CODE.toUpperCase()){
+    localStorage.setItem(ACT_KEY,ACTIVATION_CODE);
+    localStorage.removeItem(TRIAL_KEY);
+    sfxTaskConfirmed();
+    document.getElementById('act-float').style.display='none';
+    // Remove trial banner
+    const banner=document.getElementById('trial-banner');
+    if(banner)banner.remove();
+    sfxWelcome();
+    toast('🎉 升級成功！歡迎使用正式版！');
+    updateUI();
+  } else {
+    if(input)input.style.borderColor='#F06B6B';
+    if(err)err.textContent='啟動碼不正確，請重新確認';
+    sfxPinError();
+  }
+}
+
+function checkExpiredCode(){
+  const input=document.getElementById('expired-code-input');
+  const err=document.getElementById('expired-code-err');
+  if(!input) return;
+  const entered=input.value.trim().toUpperCase();
+  const correct=ACTIVATION_CODE.toUpperCase();
+  if(entered===correct){
+    // Unlock!
+    localStorage.setItem(ACT_KEY, ACTIVATION_CODE);
+    localStorage.removeItem(TRIAL_KEY); // Remove trial timer
+    input.style.borderColor='#2A8A6A';
+    if(err) err.textContent='';
+    sfxTaskConfirmed();
+    setTimeout(()=>{
+      const overlay=document.getElementById('trial-expired-overlay');
+      if(overlay){
+        overlay.style.transition='opacity 0.5s';
+        overlay.style.opacity='0';
+        setTimeout(()=>{overlay.remove(); sfxWelcome(); toast('🎉 升級成功！歡迎使用正式版！');updateUI();},500);
+      }
+    },600);
+  } else {
+    input.style.borderColor='#F06B6B';
+    if(err) err.textContent='啟動碼不正確，請重新確認';
+    sfxPinError();
+    input.style.animation='shake 0.4s';
+    setTimeout(()=>input.style.animation='',500);
+  }
 }
 
 function showUpgradeModal(){
@@ -5608,6 +5721,21 @@ function showUpgradeModal(){
   }
 })();
 
+
+// ── Browser reminder ──
+(function(){
+  if(localStorage.getItem('br_dismissed')) return;
+  const ua=navigator.userAgent||'';
+  const isInApp=/Line\/|FBAN|FBAV|Instagram|MicroMessenger|Twitter|Snapchat/.test(ua);
+  if(isInApp){
+    const el=document.getElementById('browser-reminder');
+    if(el){
+      el.style.display='block';
+      // Push content down
+      document.body.style.paddingTop='110px';
+    }
+  }
+})();
 // ══════════════════════════════════════
 // INIT
 // ══════════════════════════════════════
@@ -6246,5 +6374,18 @@ if('serviceWorker' in navigator){
   </div>
 </div>
 
+
+<!-- 瀏覽器提醒 (LINE/FB in-app browser) -->
+<div id="browser-reminder" style="display:none;position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#FF8C00,#FF6B00);color:#fff;padding:12px 16px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,0.3)">
+  <div style="font-size:13px;font-weight:900;margin-bottom:4px">📱 請用預設瀏覽器開啟</div>
+  <div style="font-size:11px;opacity:.9;margin-bottom:8px;line-height:1.6">
+    點右上角 <b>「⋯」或「⋮」</b> → 選 <b>「用預設瀏覽器開啟」</b><br>
+    這樣功能才能完整顯示！
+  </div>
+  <button onclick="document.getElementById('browser-reminder').style.display='none';localStorage.setItem('br_dismissed','1')" 
+    style="background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.5);color:#fff;padding:6px 18px;border-radius:20px;font-family:Nunito,sans-serif;font-size:12px;font-weight:800;cursor:pointer">
+    我知道了 ✓
+  </button>
+</div>
 </body>
 </html>
