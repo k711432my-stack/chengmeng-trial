@@ -6534,6 +6534,25 @@ if('serviceWorker' in navigator){
 </div>
 <script>
 function cmValid(c){return /^CM-20\d{2}-\d{3}$/.test(c.trim().toUpperCase())}
+
+// 驗證啟動碼：對照後台客戶名單（儲存在 chengmeng-shop 的 localStorage）
+function cmVerify(code) {
+  var clean = code.trim().toUpperCase();
+  // 方式1：檢查進階格式
+  if (!cmValid(clean)) return { ok: false, msg: '❌ 格式錯誤，請輸入 CM-20XX-XXX' };
+  // 方式2：對照 cm_sales_v3 客戶名單
+  try {
+    var sales = JSON.parse(localStorage.getItem('cm_sales_v3') || '[]');
+    if (sales.length > 0) {
+      var found = sales.find(function(c){ return c.code === clean; });
+      if (!found) return { ok: false, msg: '❌ 啟動碼不存在，請確認碼号或聯絡購買者' };
+      return { ok: true };
+    }
+  } catch(e) {}
+  // 方式3：如果是全新裝置（沒有 cm_sales_v3），只驗格式
+  return { ok: true };
+}
+
 function cmSave(c){
   var t=new Date(),e=new Date(t);e.setFullYear(e.getFullYear()+1);
   var f=function(d){return d.getFullYear()+'/'+(d.getMonth()+1).toString().padStart(2,'0')+'/'+d.getDate().toString().padStart(2,'0')};
@@ -6543,27 +6562,45 @@ function cmSave(c){
 }
 function cmAct(){
   var c=document.getElementById('pw-inp').value,err=document.getElementById('pw-err');
-  if(!cmValid(c)){err.textContent='❌ 啟動碼格式錯誤，請確認 CM-20XX-XXX';return}
+  var v=cmVerify(c);
+  if(!v.ok){err.textContent=v.msg;return;}
   var exp=cmSave(c);alert('🎉 啟動成功！到期日期：'+exp);location.reload();
 }
 function cmActM(){
   var c=document.getElementById('m-inp').value,err=document.getElementById('m-err');
-  if(!cmValid(c)){err.textContent='❌ 格式錯誤';return}
+  var v=cmVerify(c);
+  if(!v.ok){err.textContent=v.msg;return;}
   var exp=cmSave(c);alert('🎉 啟動成功！到期：'+exp);location.reload();
 }
 function cmShowM(){document.getElementById('cm-modal').style.display='flex'}
+
+// 「URL 參數」：?code=CM-20XX-XXX 自動填入啟動碼
+function cmCheckUrlCode(){
+  var params=new URLSearchParams(window.location.search);
+  var code=params.get('code');
+  if(!code) return;
+  // 如果已是正式版就不管
+  if(localStorage.getItem('cm_pro')==='1') return;
+  // 自動填入到輸入框
+  setTimeout(function(){
+    var inp=document.getElementById('pw-inp');
+    var minp=document.getElementById('m-inp');
+    if(inp) inp.value=code.toUpperCase();
+    if(minp) minp.value=code.toUpperCase();
+  }, 1000);
+}
+
 function cmCheck(){
   var isPro=localStorage.getItem('cm_pro')==='1';
   var pw=document.getElementById('cm-paywall'),fab=document.getElementById('cm-fab');
-  if(isPro){pw.classList.remove('show');fab.classList.remove('show');return}
+  if(isPro){pw.classList.remove('show');fab.classList.remove('show');return;}
   var ts=localStorage.getItem('cm_trial_start');
-  if(!ts){localStorage.setItem('cm_trial_start',Date.now().toString());fab.classList.add('show');return}
+  if(!ts){localStorage.setItem('cm_trial_start',Date.now().toString());fab.classList.add('show');return;}
   var days=(Date.now()-parseInt(ts))/(86400000);
-  if(days>=7){pw.classList.add('show');document.body.style.overflow='hidden'}
-  else{fab.classList.add('show')}
+  if(days>=7){pw.classList.add('show');document.body.style.overflow='hidden';}
+  else{fab.classList.add('show');}
 }
-window.addEventListener('load',function(){setTimeout(cmCheck,800)});
-document.addEventListener('DOMContentLoaded',function(){setTimeout(cmCheck,500)});
-</script>
+window.addEventListener('load',function(){setTimeout(function(){cmCheck();cmCheckUrlCode();},800)});
+document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){cmCheck();cmCheckUrlCode();},500)});</script>
 </body>
 </html>
