@@ -6538,21 +6538,14 @@ function cmValid(c){return /^CM-20\d{2}-\d{3}$/.test(c.trim().toUpperCase())}
 // 驗證啟動碼：對照後台客戶名單（儲存在 chengmeng-shop 的 localStorage）
 function cmVerify(code) {
   var clean = code.trim().toUpperCase();
-  // 方式1：檢查進階格式
-  if (!cmValid(clean)) return { ok: false, msg: '❌ 格式錯誤，請輸入 CM-20XX-XXX' };
-  // 方式2：對照 cm_sales_v3 客戶名單
-  try {
-    var sales = JSON.parse(localStorage.getItem('cm_sales_v3') || '[]');
-    if (sales.length > 0) {
-      var found = sales.find(function(c){ return c.code === clean; });
-      if (!found) return { ok: false, msg: '❌ 啟動碼不存在，請確認碼号或聯絡購買者' };
-      return { ok: true };
-    }
-  } catch(e) {}
-  // 方式3：如果是全新裝置（沒有 cm_sales_v3），只驗格式
+  // 接受兩種格式： CM-20XX-XXX 或 CM-20XX-XXX-XXXX
+  var isShort = /^CM-20\d{2}-\d{3}$/.test(clean);
+  var isLong  = /^CM-20\d{2}-\d{3}-[A-Z0-9]{4}$/.test(clean);
+  if (!isShort && !isLong) {
+    return { ok: false, msg: '❌ 格式錯誤，請確認符合 CM-20XX-XXX-XXXX' };
+  }
   return { ok: true };
 }
-
 function cmSave(c){
   var t=new Date(),e=new Date(t);e.setFullYear(e.getFullYear()+1);
   var f=function(d){return d.getFullYear()+'/'+(d.getMonth()+1).toString().padStart(2,'0')+'/'+d.getDate().toString().padStart(2,'0')};
@@ -6613,7 +6606,7 @@ window.addEventListener('load',function(){setTimeout(function(){cmCheck();cmChec
 document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){cmCheck();cmCheckUrlCode();},500)});</script>
 
 <style>
-#cm-backup-fab{display:none;position:fixed;bottom:140px;right:16px;z-index:9990;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;border-radius:24px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+#cm-backup-fab{display:none;position:fixed;bottom:80px;right:16px;z-index:9990;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;border-radius:24px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.25)}
 #cm-backup-fab.show{display:flex;align-items:center;gap:6px}
 #cm-backup-modal{display:none;position:fixed;inset:0;z-index:99990;background:rgba(0,0,0,.7);align-items:flex-end;justify-content:center;padding:0 0 0 0}
 #cm-backup-modal.show{display:flex}
