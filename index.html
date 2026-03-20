@@ -1598,12 +1598,8 @@ function taskSel(id){
   
   // Check if already applied today
   const already=k.pendingTasks.find(p=>p.taskId===id&&p.date===todayStr);
-  if(already){
-    if(already.confirmed){
-      toast('✅ 這個任務今天已經確認過了！');
-    } else {
-      toast('⏳ 這個任務已申請！等熊熊確認 🐻');
-    }
+  if(already && !already.confirmed){
+    toast('⏳ 這個任務待確認！請等待父母確認後再加 🐻');
     return;
   }
   
@@ -7044,6 +7040,69 @@ window.addEventListener('load', function() {
   }
   
   window.cmInjectCopyTaskBtns = cmInjectCopyTaskBtns;
+})();
+</script>
+
+<style>
+#cm-copy-task-wrap button:hover{opacity:.9}
+</style>
+<script>
+(function(){
+  var _origART = window.aRenderTasks;
+  if(!_origART) return;
+  window.aRenderTasks = function() {
+    var r = _origART.apply(this, arguments);
+    setTimeout(window.cmInjectCopyBtn, 150);
+    return r;
+  };
+
+  window.cmInjectCopyBtn = function() {
+    var tl = document.getElementById('task-list');
+    if(!tl) return;
+    var old = document.getElementById('cm-copy-task-wrap');
+    if(old) old.remove();
+    var activeKt = document.querySelector('.kt.active');
+    if(!activeKt) return;
+    var oc = activeKt.getAttribute('onclick')||'';
+    var digits = oc.replace(/[^0-9]/g,'');
+    if(digits==='') return;
+    var curIdx = parseInt(digits);
+    var k4 = JSON.parse(localStorage.getItem('cm_k4')||'{}');
+    var others = Object.keys(k4).filter(function(i){return parseInt(i)!==curIdx;});
+    if(!others.length) return;
+    var wrap = document.createElement('div');
+    wrap.id = 'cm-copy-task-wrap';
+    wrap.style.cssText = 'padding:8px 0 4px;';
+    others.forEach(function(ti){
+      var btn = document.createElement('button');
+      btn.style.cssText = 'width:100%;padding:10px 14px;margin-bottom:6px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-sizing:border-box;';
+      btn.textContent = '📋 將全部任務複製到「' + k4[ti].name + '」';
+      btn.onclick = function(){ window.cmCopyAllTasks(curIdx, parseInt(ti)); };
+      wrap.appendChild(btn);
+    });
+    tl.appendChild(wrap);
+  };
+
+  window.cmCopyAllTasks = function(fromIdx, toIdx) {
+    var k4 = JSON.parse(localStorage.getItem('cm_k4')||'{}');
+    var fk = k4[fromIdx], tk = k4[toIdx];
+    if(!fk||!tk){alert('找不到孟子');return;}
+    if(!fk.tasks||!fk.tasks.length){alert('沒有任務可複製');return;}
+    if(!confirm('將「'+fk.name+'」的全部任務複製到「'+tk.name+'」？
+同名任務會被更新。'))return;
+    if(!tk.tasks) tk.tasks=[];
+    var cp=0, up=0;
+    fk.tasks.forEach(function(t){
+      var ei = tk.tasks.findIndex(function(x){return x.name===t.name;});
+      if(ei>-1){tk.tasks[ei]=JSON.parse(JSON.stringify(t));up++;}
+      else{tk.tasks.push(JSON.parse(JSON.stringify(t)));cp++;}
+    });
+    localStorage.setItem('cm_k4',JSON.stringify(k4));
+    if(typeof switchKid==='function'){switchKid(toIdx);setTimeout(function(){switchKid(fromIdx);},400);}
+    alert('✅ 複製 '+cp+' 個、更新 '+up+' 個任務到「'+tk.name+'」！');
+  };
+
+  window.addEventListener('load',function(){setTimeout(window.cmInjectCopyBtn,1000);});
 })();
 </script>
 </body>
