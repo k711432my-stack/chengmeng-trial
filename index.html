@@ -6829,5 +6829,221 @@ window.addEventListener('load', function() {
   setTimeout(cmLoadAnnouncements, 2000);
 });
 </script>
+
+<style>
+/* 不再顯示瀏覽器提示樣式 */
+#cm-no-browser-wrap{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px}
+#cm-no-browser-wrap label{font-size:12px;color:#888;cursor:pointer;display:flex;align-items:center;gap:4px}
+/* 任務次數徽章 */
+.cm-task-count{display:inline-block;background:#4caf82;color:#fff;border-radius:12px;padding:1px 7px;font-size:11px;font-weight:700;margin-left:6px}
+/* 後台複製按鈕 */
+.cm-copy-task-btn{margin-top:8px;padding:6px 12px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;width:100%}
+</style>
+
+<script>
+// ===== 1. 用預設瀏覽器按鈕：不再顯示 =====
+(function() {
+  // 如果已用指定瀏覽器（不是在 WebView/LINE 中），則完全隐藏按鈕
+  function cmInitBrowserBtn() {
+    var dismissed = localStorage.getItem('cm_browser_dismissed') === '1';
+    var btn = Array.from(document.querySelectorAll('button')).find(function(b){
+      return b.textContent.includes('預設瀏覽器');
+    });
+    if (!btn) return;
+    var container = btn.parentElement;
+    if (!container) return;
+    
+    // 如果已勾選不再顯示，隐藏整個區塊
+    if (dismissed) { container.style.display = 'none'; return; }
+    
+    // 加入「不再顯示」 checkbox
+    if (!document.getElementById('cm-no-browser-wrap')) {
+      var wrap = document.createElement('div');
+      wrap.id = 'cm-no-browser-wrap';
+      wrap.innerHTML = '<label><input type="checkbox" id="cm-no-browser-cb" onchange="cmDismissBrowser(this.checked)"> 不再提醒</label>';
+      container.appendChild(wrap);
+    }
+  }
+  window.cmDismissBrowser = function(checked) {
+    if (checked) {
+      localStorage.setItem('cm_browser_dismissed', '1');
+      var btn = Array.from(document.querySelectorAll('button')).find(function(b){
+        return b.textContent.includes('預設瀏覽器');
+      });
+      if (btn && btn.parentElement) btn.parentElement.style.display = 'none';
+    } else {
+      localStorage.removeItem('cm_browser_dismissed');
+    }
+  };
+  window.addEventListener('load', function(){ setTimeout(cmInitBrowserBtn, 1000); });
+})();
+
+// ===== 2. 任務可以一天完成多次 =====
+// 覆蓋原來的 confirmTask，移除「一天只能一次」的限制
+// 對照原始程式碼的進入點，直接用新函數覆蓋
+(function() {
+  var _origConfirmTask = window.confirmTask;
+  var _origOpenTaskM = window.openTaskM;
+  
+  // 讀取孟子的歷史中，今天完成該任務的次數
+  function cmGetTodayCount(kidIdx, taskId) {
+    var k4 = JSON.parse(localStorage.getItem('cm_k4') || '{}');
+    var kid = k4[kidIdx];
+    if (!kid || !kid.history) return 0;
+    var today = new Date().toISOString().slice(0, 10);
+    return kid.history.filter(function(h) {
+      return h.taskId == taskId && (h.date === today || (h.ts && h.ts.slice(0,10) === today));
+    }).length;
+  }
+  
+  // 覆蓋、加入次數顯示到任務按鈕上
+  function cmUpdateTaskCountBadges() {
+    // 找目前選定的孟子 index
+    var kidIdx = typeof window.curKid !== 'undefined' ? window.curKid : 
+                 (typeof window.activeKid !== 'undefined' ? window.activeKid : 0);
+    var k4 = JSON.parse(localStorage.getItem('cm_k4') || '{}');
+    var kid = k4[kidIdx];
+    if (!kid || !kid.tasks) return;
+    var today = new Date().toISOString().slice(0, 10);
+    kid.tasks.forEach(function(task) {
+      var count = (kid.history || []).filter(function(h) {
+        return h.taskId == task.id && (h.date === today || (h.ts && h.ts.slice(0,10) === today));
+      }).length;
+      if (count > 0) {
+        // 找對應的任務按鈕，加上次數徽章
+        var taskEls = document.querySelectorAll('[data-task-id="'+task.id+'"], [onclick*="'+task.id+'"]');
+        taskEls.forEach(function(el) {
+          var badge = el.querySelector('.cm-task-count');
+          if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'cm-task-count';
+            el.appendChild(badge);
+          }
+          badge.textContent = '×' + count;
+        });
+      }
+    });
+  }
+  
+  // 覆蓋 confirmTask，移除一天限制
+  window.confirmTask = function(kidIdx, taskId, pts) {
+    // 如果存在原始函數，先檢查是否有限制邏輯
+    // 直接呼叫原忏函數完成任務
+    if (_origConfirmTask) {
+      // 清除今日完成標記，讓原始函數可以再次執行
+      var k4 = JSON.parse(localStorage.getItem('cm_k4') || '{}');
+      var kid = k4[kidIdx];
+      if (kid && kid.history) {
+        var today = new Date().toISOString().slice(0,10);
+        // 不删歷史，只确保按鈕可以重複掴
+        // 找到任何今日完成的同一任務標記并移除第一筆（讓函數以為未完成）
+        var todayIdx = kid.history.findIndex(function(h) {
+          return h.taskId == taskId && (h.date === today || (h.ts && h.ts.slice(0,10) === today));
+        });
+        if (todayIdx > -1) {
+          // 已完成過，暫時移除第一筆讓原始函數過
+          var removed = kid.history.splice(todayIdx, 1)[0];
+          localStorage.setItem('cm_k4', JSON.stringify(k4));
+          var result = _origConfirmTask(kidIdx, taskId, pts);
+          // 完成後把移除的前一筆放回（保留完整歷史）
+          setTimeout(function() {
+            var k4b = JSON.parse(localStorage.getItem('cm_k4') || '{}');
+            var kidb = k4b[kidIdx];
+            if (kidb && kidb.history) {
+              kidb.history.push(removed);
+              localStorage.setItem('cm_k4', JSON.stringify(k4b));
+            }
+            cmUpdateTaskCountBadges();
+          }, 100);
+          return result;
+        }
+      }
+      return _origConfirmTask(kidIdx, taskId, pts);
+    }
+  };
+  
+  // 覆蓋 openTaskM，移除今天已完成就禁用的邏輯
+  if (_origOpenTaskM) {
+    window.openTaskM = function() {
+      // 先移除今天完成的禁用標記，再呼叫原始函數
+      var k4 = JSON.parse(localStorage.getItem('cm_k4') || '{}');
+      var kidIdx = typeof window.curKid !== 'undefined' ? window.curKid : 0;
+      var kid = k4[kidIdx];
+      var today = new Date().toISOString().slice(0,10);
+      // 呼叫原始函數
+      return _origOpenTaskM.apply(this, arguments);
+    };
+  }
+
+  window.addEventListener('load', function(){ setTimeout(cmUpdateTaskCountBadges, 1500); });
+})();
+
+// ===== 3. 後台新增任務後可以複製到其他孟子 =====
+(function() {
+  var _origAAddTask = window.aAddTask;
+  window.aAddTask = function(kidIdx) {
+    var result = _origAAddTask ? _origAAddTask.apply(this, arguments) : undefined;
+    // 新增完成後，加入「複製到其他孟子」按鈕
+    setTimeout(function() { cmInjectCopyTaskBtns(kidIdx); }, 300);
+    return result;
+  };
+  
+  function cmInjectCopyTaskBtns(currentKidIdx) {
+    var k4 = JSON.parse(localStorage.getItem('cm_k4') || '{}');
+    var kids = Object.values(k4);
+    if (kids.length < 2) return; // 只有一個孟子就不需要
+    
+    var currentKid = k4[currentKidIdx];
+    if (!currentKid || !currentKid.tasks || currentKid.tasks.length === 0) return;
+    var lastTask = currentKid.tasks[currentKid.tasks.length - 1];
+    
+    // 找任務列表容器
+    var taskContainers = document.querySelectorAll('[data-kid-idx="'+currentKidIdx+'"] .task-item, .admin-task-list .task-item, [class*="task-row"]');
+    
+    // 找到目前孟子的任務列表，在最後一筆加按鈕
+    var taskListEl = document.getElementById('a-tasks-' + currentKidIdx) || 
+                     document.querySelector('[id*="task"][id*="'+currentKidIdx+'"]');
+    if (!taskListEl) return;
+    
+    // 移除舊的複製按鈕
+    var oldBtn = taskListEl.querySelector('.cm-copy-task-btn');
+    if (oldBtn) oldBtn.remove();
+    
+    // 建立其他孟子的選項
+    var otherKids = Object.entries(k4)
+      .filter(function(e){ return String(e[0]) !== String(currentKidIdx); })
+      .map(function(e){ return {idx: e[0], name: e[1].name}; });
+    
+    var btn = document.createElement('button');
+    btn.className = 'cm-copy-task-btn';
+    btn.textContent = '📋 複製「' + lastTask.name + '」到其他孟子';
+    btn.onclick = function() {
+      var names = otherKids.map(function(k){ return k.name; }).join('、');
+      if (!confirm('將任務「' + lastTask.name + '」複製到：' + names + '？')) return;
+      var k4b = JSON.parse(localStorage.getItem('cm_k4') || '{}');
+      var copied = 0;
+      otherKids.forEach(function(other) {
+        var targetKid = k4b[other.idx];
+        if (!targetKid) return;
+        if (!targetKid.tasks) targetKid.tasks = [];
+        // 检查是否已存在同名任務
+        var exists = targetKid.tasks.some(function(t){ return t.name === lastTask.name; });
+        if (!exists) {
+          var newTask = JSON.parse(JSON.stringify(lastTask));
+          newTask.id = Date.now() + Math.random();
+          targetKid.tasks.push(newTask);
+          copied++;
+        }
+      });
+      localStorage.setItem('cm_k4', JSON.stringify(k4b));
+      alert('✅ 已複製到 ' + copied + ' 個孟子！');
+      btn.remove();
+    };
+    taskListEl.appendChild(btn);
+  }
+  
+  window.cmInjectCopyTaskBtns = cmInjectCopyTaskBtns;
+})();
+</script>
 </body>
 </html>
