@@ -6735,13 +6735,13 @@ window.addEventListener('load',function(){
 </script>
 
 <style>
-#cm-ann-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:9980;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;padding:0;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+#cm-ann-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:1000;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;padding:0;box-shadow:0 2px 12px rgba(0,0,0,.25)}
 #cm-ann-banner.show{display:block}
-#cm-ann-inner{padding:10px 16px 10px 16px;position:relative;cursor:pointer}
+#cm-ann-inner{padding:8px 16px 8px 16px;position:relative;cursor:pointer}
 #cm-ann-close{position:absolute;top:8px;right:12px;background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:50%;width:22px;height:22px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
 #cm-ann-title{font-size:13px;font-weight:700;margin:0 24px 2px 0}
 #cm-ann-body{font-size:12px;opacity:.9;margin:0;white-space:pre-line}
-#cm-ann-modal{display:none;position:fixed;inset:0;z-index:99985;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:24px}
+#cm-ann-modal{display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:24px}
 #cm-ann-modal.show{display:flex}
 #cm-ann-sheet{background:#fff;border-radius:16px;padding:24px 20px;width:100%;max-width:380px;max-height:80vh;overflow-y:auto}
 </style>
@@ -6826,7 +6826,7 @@ function cmAnnCloseDetail() {
 
 // App 載入後讀取公告（延遲 2 秒，先讓 App 生成）
 window.addEventListener('load', function() {
-  setTimeout(cmLoadAnnouncements, 2000);
+  setTimeout(cmLoadAnnouncements, 5000);
 });
 </script>
 
