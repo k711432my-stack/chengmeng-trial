@@ -2434,9 +2434,7 @@ function aRenderTasks(){
       <button onclick="aDelT(${i})" style="background:none;border:none;font-size:13px;cursor:pointer">🗑️</button>
     </div>`).join('');
 
-  setTimeout(function(){if(typeof window.cmInjectCopyBtn==='function')window.cmInjectCopyBtn();},200);}
-
-
+  setTimeout(cmInjectCopyBtn,200);}
 
 function cmInjectCopyBtn() {
   var tl = document.getElementById('task-list');
@@ -2459,8 +2457,8 @@ function cmInjectCopyBtn() {
     var btn = document.createElement('button');
     btn.style.cssText = 'width:100%;padding:10px 14px;margin-bottom:6px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-sizing:border-box;';
     var curName = k4[curIdx] ? k4[curIdx].name : curIdx;
-    btn.textContent = '📋 將「' + curName + '」全部任務複製到「' + k4[ti].name + '」';
-    btn.onclick = (function(f,t){ return function(){ cmCopyAllTasks(f,t); }; })(curIdx, parseInt(ti));
+    btn.textContent = '📋 將「'+curName+'」全部任務複製到「'+k4[ti].name+'」';
+    btn.onclick = (function(f,t){return function(){cmCopyAllTasks(f,t);};})(curIdx,parseInt(ti));
     wrap.appendChild(btn);
   });
   tl.appendChild(wrap);
@@ -2468,12 +2466,12 @@ function cmInjectCopyBtn() {
 
 function cmCopyAllTasks(fromIdx, toIdx) {
   var k4 = JSON.parse(localStorage.getItem('cm_k4')||'{}');
-  var fk=k4[fromIdx], tk=k4[toIdx];
+  var fk=k4[fromIdx],tk=k4[toIdx];
   if(!fk||!tk){alert('找不到孟子');return;}
   if(!fk.tasks||!fk.tasks.length){alert('沒有任務可複製');return;}
   if(!confirm('將「'+fk.name+'」全部任務複製到「'+tk.name+'」？
 同名任務會被更新。'))return;
-  if(!tk.tasks) tk.tasks=[];
+  if(!tk.tasks)tk.tasks=[];
   var cp=0,up=0;
   fk.tasks.forEach(function(t){
     var ei=tk.tasks.findIndex(function(x){return x.name===t.name;});
@@ -2484,6 +2482,7 @@ function cmCopyAllTasks(fromIdx, toIdx) {
   if(typeof switchKid==='function'){switchKid(toIdx);setTimeout(function(){switchKid(fromIdx);},400);}
   alert('✅ 複製 '+cp+' 個、更新 '+up+' 個任務到「'+tk.name+'」！');
 }
+
 function aKidTask(i){
   aki=i;
   aRenderTasks();
