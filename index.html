@@ -5782,7 +5782,7 @@ function showTrialDisclaimer(){
 
 
 // ── Browser float button ──
-function showBrowserTip(){
+function showBrowserTip(){if(localStorage.getItem('cm_browser_dismissed')==='1')return;
   document.getElementById('browser-tip-modal').style.display='flex';
 }
 (function(){
@@ -6513,7 +6513,7 @@ if('serviceWorker' in navigator){
     <div id="pw-err" class="pw-err"></div>
     <div class="pw-div">還沒購買？</div>
     <a href="https://chengmeng-shop.netlify.app" class="pw-buy">🛒 立即購買正式版</a>
-    <p class="pw-price">年費 NT$399 · 記得定期備份資料</p>
+    <p class="pw-price">買斷 NT$399，第二年起維護費 NT$49/年 · 記得定期備份資料</p>
   </div>
 </div>
 <button id="cm-fab" onclick="cmShowM()">🔑 輸入啟動碼</button>
