@@ -6733,5 +6733,101 @@ window.addEventListener('load',function(){
   },1000);
 });
 </script>
+
+<style>
+#cm-ann-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:9980;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;padding:0;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+#cm-ann-banner.show{display:block}
+#cm-ann-inner{padding:10px 16px 10px 16px;position:relative;cursor:pointer}
+#cm-ann-close{position:absolute;top:8px;right:12px;background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:50%;width:22px;height:22px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+#cm-ann-title{font-size:13px;font-weight:700;margin:0 24px 2px 0}
+#cm-ann-body{font-size:12px;opacity:.9;margin:0;white-space:pre-line}
+#cm-ann-modal{display:none;position:fixed;inset:0;z-index:99985;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:24px}
+#cm-ann-modal.show{display:flex}
+#cm-ann-sheet{background:#fff;border-radius:16px;padding:24px 20px;width:100%;max-width:380px;max-height:80vh;overflow-y:auto}
+</style>
+
+<!-- 公告 Banner -->
+<div id="cm-ann-banner">
+  <div id="cm-ann-inner" onclick="cmAnnShowDetail()">
+    <p id="cm-ann-title"></p>
+    <p id="cm-ann-body"></p>
+    <button id="cm-ann-close" onclick="event.stopPropagation();cmAnnDismiss()">×</button>
+  </div>
+</div>
+
+<!-- 公告 詳細 Modal -->
+<div id="cm-ann-modal" onclick="if(event.target===this)cmAnnCloseDetail()">
+  <div id="cm-ann-sheet">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+      <span style="font-size:20px">📣</span>
+      <h3 style="margin:0;font-size:17px;font-weight:700" id="cm-ann-detail-title"></h3>
+    </div>
+    <p style="font-size:14px;color:#444;white-space:pre-line;margin:0 0 16px" id="cm-ann-detail-body"></p>
+    <p style="font-size:12px;color:#999;margin:0 0 16px" id="cm-ann-detail-date"></p>
+    <button onclick="cmAnnCloseDetail()" style="width:100%;padding:12px;background:#1a4a2e;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">關閉</button>
+  </div>
+</div>
+
+<script>
+var _cmAnnData = [];
+var _cmAnnDismissed = JSON.parse(localStorage.getItem('cm_ann_dismissed') || '[]');
+
+// App 啟動時載公告
+async function cmLoadAnnouncements() {
+  try {
+    const r = await fetch('https://raw.githubusercontent.com/k711432my-stack/chengmeng-trial/main/announcements.json?t=' + Date.now());
+    const json = await r.json();
+    _cmAnnData = (json.announcements || []).filter(a => a.active);
+    // 找尚未被關掉的公告（最新第一筆）
+    const unseen = _cmAnnData.filter(a => !_cmAnnDismissed.includes(a.id));
+    if(unseen.length > 0) cmAnnShow(unseen[0]);
+  } catch(e) {}
+}
+
+function cmAnnShow(ann) {
+  const banner = document.getElementById('cm-ann-banner');
+  const titleEl = document.getElementById('cm-ann-title');
+  const bodyEl = document.getElementById('cm-ann-body');
+  if(!banner || !titleEl) return;
+  titleEl.textContent = '📣 ' + ann.title;
+  // body 只顯示前 50 字，詳情點進去看
+  bodyEl.textContent = ann.body.length > 50 ? ann.body.substring(0,50) + '... 點進看詳情' : ann.body;
+  banner.dataset.annId = ann.id;
+  banner.dataset.annTitle = ann.title;
+  banner.dataset.annBody = ann.body;
+  banner.dataset.annDate = ann.date || '';
+  banner.classList.add('show');
+  // 公告 banner 後，把主內容對應能往下移一下
+  var mainContent = document.querySelector('.app-content, #app, .main, main');
+  if(mainContent) mainContent.style.paddingTop = (parseInt(mainContent.style.paddingTop)||0) + 60 + 'px';
+}
+
+function cmAnnDismiss() {
+  const banner = document.getElementById('cm-ann-banner');
+  const id = parseInt(banner?.dataset.annId);
+  if(id && !_cmAnnDismissed.includes(id)) {
+    _cmAnnDismissed.push(id);
+    localStorage.setItem('cm_ann_dismissed', JSON.stringify(_cmAnnDismissed));
+  }
+  banner?.classList.remove('show');
+}
+
+function cmAnnShowDetail() {
+  const banner = document.getElementById('cm-ann-banner');
+  document.getElementById('cm-ann-detail-title').textContent = banner.dataset.annTitle || '';
+  document.getElementById('cm-ann-detail-body').textContent = banner.dataset.annBody || '';
+  document.getElementById('cm-ann-detail-date').textContent = banner.dataset.annDate ? '發佈日期：' + banner.dataset.annDate : '';
+  document.getElementById('cm-ann-modal').classList.add('show');
+}
+
+function cmAnnCloseDetail() {
+  document.getElementById('cm-ann-modal').classList.remove('show');
+}
+
+// App 載入後讀取公告（延遲 2 秒，先讓 App 生成）
+window.addEventListener('load', function() {
+  setTimeout(cmLoadAnnouncements, 2000);
+});
+</script>
 </body>
 </html>
