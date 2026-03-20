@@ -1598,10 +1598,7 @@ function taskSel(id){
   
   // Check if already applied today
   const already=k.pendingTasks.find(p=>p.taskId===id&&p.date===todayStr);
-  if(already && !already.confirmed){
-    toast('⏳ 這個任務待確認！請等待父母確認後再加 🐻');
-    return;
-  }
+  
   
   ct=kidTasks().find(t=>t.id===id);
   if(!ct)return;
