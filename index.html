@@ -6579,17 +6579,26 @@ function cmCheckUrlCode(){
   var params=new URLSearchParams(window.location.search);
   var code=params.get('code');
   if(!code) return;
-  // 如果已是正式版就不管
   if(localStorage.getItem('cm_pro')==='1') return;
-  // 自動填入到輸入框
+  var clean=code.trim().toUpperCase();
+  var v=cmVerify(clean);
+  if(!v.ok) return;
+  // 直接自動啟動，不需要任何按鈕
+  var exp=cmSave(clean);
+  // 顯示简短成功提示再轉向
+  var msg=document.createElement('div');
+  msg.style.cssText='position:fixed;inset:0;z-index:999999;background:linear-gradient(160deg,#1a4a2e,#0d2d1a);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px';
+  msg.innerHTML='<div style="font-size:64px;margin-bottom:16px;animation:pwB 1s ease-in-out 3">🎉</div>'
+    +'<h2 style="color:#fff;font-size:24px;font-weight:700;margin:0 0 12px">啟動成功！</h2>'
+    +'<p style="color:rgba(255,255,255,.8);font-size:15px;margin:0 0 8px">歡迎使用澄萐你理財寶貝正式版！</p>'
+    +'<p style="color:#a8e6c0;font-size:14px;margin:0 0 32px">到期日期：'+exp+'</p>'
+    +'<div style="color:rgba(255,255,255,.5);font-size:13px">正在載入中...</div>';
+  document.body.appendChild(msg);
+  // 2 秒後自動重轉到 App 首頁（移除 URL 參數）
   setTimeout(function(){
-    var inp=document.getElementById('pw-inp');
-    var minp=document.getElementById('m-inp');
-    if(inp) inp.value=code.toUpperCase();
-    if(minp) minp.value=code.toUpperCase();
-  }, 1000);
+    window.location.href=window.location.origin+window.location.pathname;
+  }, 2000);
 }
-
 function cmCheck(){
   var isPro=localStorage.getItem('cm_pro')==='1';
   var pw=document.getElementById('cm-paywall'),fab=document.getElementById('cm-fab');
