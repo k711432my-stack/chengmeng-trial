@@ -7161,5 +7161,74 @@ setTimeout(window.cmInjectCopyBtn,1500);</template>
   try{(0,eval)(el.innerHTML);}catch(e){console.error('cm-patch err:',e);}
 })();
 </script>
+
+<div id="cm-reg-modal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:340px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:36px;">🐻</div>
+      <h2 style="margin:8px 0 4px;font-size:18px;color:#2d6a4f;">歡迎使用澄萐你理財寶貝！</h2>
+      <p style="font-size:13px;color:#666;margin:0;line-height:1.5;">溫馨提醒，請留下你的聯絡資訊，方便我們了解你的使用狀況、持續改進 App 💕</p>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:13px;font-weight:600;color:#333;">家長 LINE ID <span style="color:red;">*</span></label>
+      <input id="cm-reg-line" type="text" placeholder="請輸入你的 LINE ID" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;margin-top:4px;box-sizing:border-box;outline:none;">
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="font-size:13px;font-weight:600;color:#333;">孟子名字 <span style="color:red;">*</span></label>
+      <input id="cm-reg-kids" type="text" placeholder="例：小明、小芒（可填多個）" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;margin-top:4px;box-sizing:border-box;outline:none;">
+    </div>
+    <button onclick="cmRegSubmit()" style="width:100%;padding:12px;background:linear-gradient(135deg,#2d6a4f,#40916c);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">開始使用 🚀</button>
+    <p id="cm-reg-err" style="color:red;font-size:12px;text-align:center;margin:8px 0 0;display:none;">請先填寫 LINE ID 和孟子名字</p>
+  </div>
+</div>
+
+
+<template id="cm-reg-js">window.cmRegSubmit = function() {
+  var line = document.getElementById('cm-reg-line').value.trim();
+  var kids = document.getElementById('cm-reg-kids').value.trim();
+  var err = document.getElementById('cm-reg-err');
+  if(!line || !kids) { err.style.display='block'; return; }
+  err.style.display='none';
+  
+  var regData = {
+    line: line,
+    kids: kids,
+    trialStart: new Date().toISOString().slice(0,10),
+    ts: Date.now()
+  };
+  
+  // 永久記住，下次不再詢問
+  localStorage.setItem('cm_user_registered', '1');
+  localStorage.setItem('cm_user_info', JSON.stringify(regData));
+  
+  // 用 formsubmit.co 免費轉寄到 email（不需要 token）
+  fetch('https://formsubmit.co/ajax/kelly@k711432.my.gmail.com', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+    body: JSON.stringify({
+      _subject: '🐻 新試用者：' + line,
+      LINE_ID: line,
+      kids: kids,
+      trial_start: regData.trialStart,
+      _template: 'table'
+    })
+  }).catch(function(e){ console.log('form err:', e); });
+  
+  document.getElementById('cm-reg-modal').style.display='none';
+};
+
+window.addEventListener('load', function() {
+  if(localStorage.getItem('cm_user_registered') === '1') return;
+  setTimeout(function() {
+    var modal = document.getElementById('cm-reg-modal');
+    if(modal) modal.style.display='flex';
+  }, 2000);
+});</template>
+<script>
+(function(){
+  var el=document.getElementById('cm-reg-js');
+  if(el){try{(0,eval)(el.innerHTML);}catch(e){console.error('reg err:',e);}}
+})();
+</script>
 </body>
 </html>
