@@ -6713,8 +6713,22 @@ function cmToast(msg){
 window.addEventListener('load',function(){
   setTimeout(function(){
     if(localStorage.getItem('cm_pro')==='1'){
+      // 找 © 版權文字元素，將備份連結動態插入
       var lnk=document.getElementById('cm-backup-link');
-      if(lnk) lnk.style.display='block';
+      if(lnk){
+        var allEls=document.querySelectorAll('*');
+        var cpEl=null;
+        for(var i=0;i<allEls.length;i++){
+          if(allEls[i].children.length===0 && allEls[i].textContent.includes('\u00a9 2026')){
+            cpEl=allEls[i];break;
+          }
+        }
+        if(cpEl && cpEl.parentElement){
+          cpEl.parentElement.appendChild(lnk);
+        }
+        lnk.style.display='block';
+        lnk.style.marginTop='8px';
+      }
     }
   },1000);
 });
