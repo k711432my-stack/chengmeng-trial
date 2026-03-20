@@ -5604,16 +5604,30 @@ function showTrialBanner(daysLeft){
 }
 
 function showProBanner(expiryDate){
-  const banner = document.getElementById('trial-banner');
-  if(!banner) return;
+  let banner = document.getElementById('trial-banner');
+  if(!banner){
+    banner = document.createElement('div');
+    banner.id = 'trial-banner';
+    banner.style.cssText = 'width:100%;padding:6px 12px;text-align:center;font-size:13px;position:sticky;top:0;z-index:999;';
+    const appEl = document.getElementById('app') || document.body.firstElementChild;
+    if(appEl) appEl.insertBefore(banner, appEl.firstChild);
+    else document.body.insertBefore(banner, document.body.firstChild);
+  }
   banner.style.background = 'linear-gradient(90deg,#1a6b4a,#2d9b6a)';
   banner.style.color = '#fff';
   banner.innerHTML = '<span style="font-weight:700">✅ 正式版</span>　到期日：<strong>' + expiryDate + '</strong>　<span style="opacity:0.8;font-size:12px">資料永久保留</span>';
 }
 
 function showExpiredBanner(){
-  const banner = document.getElementById('trial-banner');
-  if(!banner) return;
+  let banner = document.getElementById('trial-banner');
+  if(!banner){
+    banner = document.createElement('div');
+    banner.id = 'trial-banner';
+    banner.style.cssText = 'width:100%;padding:6px 12px;text-align:center;font-size:13px;position:sticky;top:0;z-index:999;';
+    const appEl = document.getElementById('app') || document.body.firstElementChild;
+    if(appEl) appEl.insertBefore(banner, appEl.firstChild);
+    else document.body.insertBefore(banner, document.body.firstChild);
+  }
   banner.style.background = '#c0392b';
   banner.style.color = '#fff';
   banner.innerHTML = '⚠️ 試用期已結束　<a href="https://chengmeng-shop.netlify.app/#buy" style="color:#ffe;text-decoration:underline">升級正式版 →</a>';
