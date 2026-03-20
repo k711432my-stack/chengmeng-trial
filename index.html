@@ -6485,5 +6485,85 @@ if('serviceWorker' in navigator){
   🌐 建議用<b>預設瀏覽器</b>開啟<br>
   <span style="font-size:9px;opacity:.8">點此關閉</span>
 </div>
+
+<style>
+#cm-paywall{display:none;position:fixed;inset:0;z-index:99999;background:linear-gradient(160deg,#1a4a2e 0%,#0d2d1a 100%);flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;overflow-y:auto}
+#cm-paywall.show{display:flex}
+#cm-paywall .pw-bear{font-size:64px;margin-bottom:8px;animation:pwB 2s ease-in-out infinite}
+@keyframes pwB{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+#cm-paywall h2{color:#fff;font-size:22px;font-weight:700;margin:0 0 8px}
+#cm-paywall .pw-sub{color:rgba(255,255,255,.75);font-size:14px;margin:0 0 24px;line-height:1.6}
+#cm-paywall .pw-box{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:24px 20px;width:100%;max-width:340px}
+#cm-paywall .pw-box h3{color:#a8e6c0;font-size:15px;font-weight:600;margin:0 0 14px}
+#cm-paywall .pw-inp{width:100%;padding:12px 14px;font-size:16px;font-weight:700;letter-spacing:2px;text-align:center;text-transform:uppercase;border:2px solid rgba(255,255,255,.3);border-radius:10px;background:rgba(255,255,255,.12);color:#fff;outline:none;box-sizing:border-box;margin-bottom:12px}
+#cm-paywall .pw-inp:focus{border-color:#4caf82;background:rgba(255,255,255,.18)}
+#cm-paywall .pw-btn{width:100%;padding:14px;background:linear-gradient(135deg,#4caf82,#2d8a5e);color:#fff;font-size:16px;font-weight:700;border:none;border-radius:10px;cursor:pointer}
+#cm-paywall .pw-err{color:#ff8a80;font-size:13px;margin-top:8px;min-height:18px}
+#cm-paywall .pw-div{display:flex;align-items:center;gap:10px;margin:20px 0;color:rgba(255,255,255,.4);font-size:12px}
+#cm-paywall .pw-div::before,#cm-paywall .pw-div::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.15)}
+#cm-paywall .pw-buy{display:block;width:100%;padding:14px;background:linear-gradient(135deg,#ff9f43,#e67e22);color:#fff;font-size:15px;font-weight:700;border:none;border-radius:10px;cursor:pointer;text-decoration:none;box-sizing:border-box}
+#cm-paywall .pw-price{color:rgba(255,255,255,.6);font-size:12px;margin-top:10px}
+#cm-fab{display:none;position:fixed;bottom:80px;right:16px;z-index:9999;background:linear-gradient(135deg,#4caf82,#2d8a5e);color:#fff;border:none;border-radius:24px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+#cm-fab.show{display:flex;align-items:center;gap:6px}
+</style>
+<div id="cm-paywall">
+  <div class="pw-bear">🐻</div>
+  <h2>試用期已結束</h2>
+  <p class="pw-sub">謝謝你體驗澄茈你理財寶貝！<br>輸入啟動碼或購買正式版，<br>繼續陪寶貝學理財 💰</p>
+  <div class="pw-box">
+    <h3>🔑 已購買？輸入啟動碼</h3>
+    <input id="pw-inp" class="pw-inp" type="text" placeholder="CM-20XX-XXX" maxlength="12">
+    <button class="pw-btn" onclick="cmAct()">✅ 啟動正式版</button>
+    <div id="pw-err" class="pw-err"></div>
+    <div class="pw-div">還沒購買？</div>
+    <a href="https://chengmeng-shop.netlify.app" class="pw-buy">🛒 立即購買正式版</a>
+    <p class="pw-price">年費 RM 39 · 資料永久保留</p>
+  </div>
+</div>
+<button id="cm-fab" onclick="cmShowM()">🔑 輸入啟動碼</button>
+<div id="cm-modal" style="display:none;position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:24px">
+  <div style="background:#1a4a2e;border-radius:20px;padding:28px 24px;width:100%;max-width:320px;text-align:center">
+    <div style="font-size:48px;margin-bottom:12px">🔑</div>
+    <h3 style="color:#fff;font-size:18px;margin:0 0 8px">輸入啟動碼</h3>
+    <p style="color:rgba(255,255,255,.7);font-size:13px;margin:0 0 20px">購買後取得的啟動碼<br>CM-20XX-XXX</p>
+    <input id="m-inp" style="width:100%;padding:12px 14px;font-size:16px;font-weight:700;letter-spacing:2px;text-align:center;text-transform:uppercase;border:2px solid rgba(255,255,255,.3);border-radius:10px;background:rgba(255,255,255,.12);color:#fff;outline:none;box-sizing:border-box;margin-bottom:12px" type="text" placeholder="CM-20XX-XXX" maxlength="12">
+    <button onclick="cmActM()" style="width:100%;padding:13px;background:linear-gradient(135deg,#4caf82,#2d8a5e);color:#fff;font-size:15px;font-weight:700;border:none;border-radius:10px;cursor:pointer;margin-bottom:10px">✅ 啟動</button>
+    <button onclick="document.getElementById('cm-modal').style.display='none'" style="width:100%;padding:11px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);font-size:14px;border:none;border-radius:10px;cursor:pointer">取消</button>
+    <div id="m-err" style="color:#ff8a80;font-size:13px;margin-top:8px;min-height:18px"></div>
+  </div>
+</div>
+<script>
+function cmValid(c){return /^CM-20\d{2}-\d{3}$/.test(c.trim().toUpperCase())}
+function cmSave(c){
+  var t=new Date(),e=new Date(t);e.setFullYear(e.getFullYear()+1);
+  var f=function(d){return d.getFullYear()+'/'+(d.getMonth()+1).toString().padStart(2,'0')+'/'+d.getDate().toString().padStart(2,'0')};
+  localStorage.setItem('cm_pro','1');localStorage.setItem('cm_activation_code',c.trim().toUpperCase());
+  localStorage.setItem('cm_activation_date',f(t));localStorage.setItem('cm_expiry_date',f(e));
+  return f(e);
+}
+function cmAct(){
+  var c=document.getElementById('pw-inp').value,err=document.getElementById('pw-err');
+  if(!cmValid(c)){err.textContent='❌ 啟動碼格式錯誤，請確認 CM-20XX-XXX';return}
+  var exp=cmSave(c);alert('🎉 啟動成功！到期日期：'+exp);location.reload();
+}
+function cmActM(){
+  var c=document.getElementById('m-inp').value,err=document.getElementById('m-err');
+  if(!cmValid(c)){err.textContent='❌ 格式錯誤';return}
+  var exp=cmSave(c);alert('🎉 啟動成功！到期：'+exp);location.reload();
+}
+function cmShowM(){document.getElementById('cm-modal').style.display='flex'}
+function cmCheck(){
+  var isPro=localStorage.getItem('cm_pro')==='1';
+  var pw=document.getElementById('cm-paywall'),fab=document.getElementById('cm-fab');
+  if(isPro){pw.classList.remove('show');fab.classList.remove('show');return}
+  var ts=localStorage.getItem('cm_trial_start');
+  if(!ts){localStorage.setItem('cm_trial_start',Date.now().toString());fab.classList.add('show');return}
+  var days=(Date.now()-parseInt(ts))/(86400000);
+  if(days>=7){pw.classList.add('show');document.body.style.overflow='hidden'}
+  else{fab.classList.add('show')}
+}
+window.addEventListener('load',function(){setTimeout(cmCheck,800)});
+document.addEventListener('DOMContentLoaded',function(){setTimeout(cmCheck,500)});
+</script>
 </body>
 </html>
