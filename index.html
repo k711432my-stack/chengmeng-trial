@@ -6509,7 +6509,9 @@ if('serviceWorker' in navigator){
 <div id="cm-paywall">
   <div class="pw-bear">🐻</div>
   <h2>試用期已結束</h2>
-  <p class="pw-sub">謝謝你體驗澄茈你理財寶貝！<br>輸入啟動碼或購買正式版，<br>繼續陪寶貝學理財 💰</p>
+  <p class="pw-sub">謝謝你體驗澄茈你理財寶貝！<br>輸入啟動碼或購買正式版，<br>繼續陪寶貝學理財 💰</p><p id="cm-backup-link" style="display:none;margin:8px 0 0;font-size:12px">
+  <a onclick="cmShowBackup()" style="color:#4caf82;cursor:pointer;text-decoration:underline">💾 備份 / 還原資料</a>
+</p>
   <div class="pw-box">
     <h3>🔑 已購買？輸入啟動碼</h3>
     <input id="pw-inp" class="pw-inp" type="text" placeholder="CM-20XX-XXX" maxlength="12">
@@ -6606,8 +6608,8 @@ window.addEventListener('load',function(){setTimeout(function(){cmCheck();cmChec
 document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){cmCheck();cmCheckUrlCode();},500)});</script>
 
 <style>
-#cm-backup-fab{display:none;position:fixed;bottom:80px;right:16px;z-index:9990;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;border-radius:24px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.25)}
-#cm-backup-fab.show{display:flex;align-items:center;gap:6px}
+#cm-backup-fab{display:none!important}
+
 #cm-backup-modal{display:none;position:fixed;inset:0;z-index:99990;background:rgba(0,0,0,.7);align-items:flex-end;justify-content:center;padding:0 0 0 0}
 #cm-backup-modal.show{display:flex}
 #cm-backup-sheet{background:var(--color-bg,#fff);border-radius:20px 20px 0 0;padding:28px 24px 40px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
@@ -6711,8 +6713,8 @@ function cmToast(msg){
 window.addEventListener('load',function(){
   setTimeout(function(){
     if(localStorage.getItem('cm_pro')==='1'){
-      var fab=document.getElementById('cm-backup-fab');
-      if(fab) fab.classList.add('show');
+      var lnk=document.getElementById('cm-backup-link');
+      if(lnk) lnk.style.display='block';
     }
   },1000);
 });
