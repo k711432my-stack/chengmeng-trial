@@ -6775,15 +6775,16 @@ var _cmAnnDismissed = JSON.parse(localStorage.getItem('cm_ann_dismissed') || '[]
 // App 啟動時載公告
 async function cmLoadAnnouncements() {
   try {
-    const r = await fetch('https://raw.githubusercontent.com/k711432my-stack/chengmeng-trial/main/announcements.json?t=' + Date.now());
-    const json = await r.json();
-    _cmAnnData = (json.announcements || []).filter(a => a.active);
-    // 找尚未被關掉的公告（最新第一筆）
-    const unseen = _cmAnnData.filter(a => !_cmAnnDismissed.includes(a.id));
+    // jsDelivr CDN 更新很快，不需 token，用時間戳繞過 cache
+    var ts = Math.floor(Date.now()/60000); // 每分鐘更新一次
+    var url = 'https://cdn.jsdelivr.net/gh/k711432my-stack/chengmeng-trial@main/announcements.json?t=' + ts;
+    var r = await fetch(url);
+    var json = await r.json();
+    _cmAnnData = (json.announcements || []).filter(function(a){return a.active;});
+    var unseen = _cmAnnData.filter(function(a){return !_cmAnnDismissed.includes(a.id);});
     if(unseen.length > 0) cmAnnShow(unseen[0]);
-  } catch(e) {}
+  } catch(e) { console.log('ann load error:', e); }
 }
-
 function cmAnnShow(ann) {
   const banner = document.getElementById('cm-ann-banner');
   const titleEl = document.getElementById('cm-ann-title');
