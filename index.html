@@ -5524,7 +5524,7 @@ function checkActivation(){
   localStorage.setItem('cm_activation_code', code);
   localStorage.setItem('cm_activation_date', fmt(today));
   localStorage.setItem('cm_expiry_date', fmt(expiry));
-  alert('🎉 啟動成功！歡迎使用澄萌你理財寶貝正式版！\n\n啟動日期：'+fmt(today)+'\n到期日期：'+fmt(expiry)+'\n\n所有功能已解鎖，資料永久保留！');
+  alert('🎉 啟動成功！歡迎使用澄萌你理財寶貝正式版！\n\n啟動日期：'+fmt(today)+'\n到期日期：'+fmt(expiry)+'\n\n所有功能已解鎖，記得定期備份資料！');
   location.reload();
 }
 
@@ -5560,7 +5560,7 @@ function showTrialNotice(){
       </div>
     </div>
     <div style="font-size:11px;color:#888;margin-bottom:14px;line-height:1.7">
-      正式版 NT$399 買斷，資料永久保留<br>最多5個孩子・全部功能解鎖
+      正式版 NT$399 買斷，記得定期備份資料<br>最多5個孩子・全部功能解鎖
     </div>
     <button id="trial-notice-ok" style="width:100%;padding:13px;border-radius:13px;border:none;background:linear-gradient(135deg,#5BC4A0,#2A8A6A);color:#fff;font-family:Nunito,sans-serif;font-size:13px;font-weight:900;cursor:pointer">
       🐻 我了解，開始試用！
@@ -5609,7 +5609,7 @@ function showProBanner(expiryDate){
   const banner = document.createElement('div');
   banner.id = 'trial-banner';
   banner.style.cssText = 'width:100%;padding:7px 14px;text-align:center;font-size:13px;position:sticky;top:0;z-index:999;background:linear-gradient(90deg,#1a6b4a,#2d9b6a);color:#fff;font-weight:500;';
-  banner.innerHTML = '✅ <strong>正式版</strong>　到期日：<strong>' + expiryDate + '</strong>　<span style="opacity:0.75;font-size:12px">資料永久保留</span>';
+  banner.innerHTML = '✅ <strong>正式版</strong>　到期日：<strong>' + expiryDate + '</strong>　<span style="opacity:0.75;font-size:12px">記得定期備份資料</span>';
   document.body.prepend(banner);
 }
 
@@ -5636,7 +5636,7 @@ function showTrialExpired(){
     <div style="font-size:20px;font-weight:900;color:#2D1B0E;margin-bottom:8px">試用期已結束</div>
     <div style="font-size:12px;color:#888;margin-bottom:16px;line-height:1.8">
       感謝你的7天體驗！<br>
-      正式版資料永久保留，功能全面解鎖。<br>
+      正式版記得定期備份資料，功能全面解鎖。<br>
       <b style="color:#2A8A6A">購買後24小時內收到專屬網址</b>
     </div>
     <div style="background:#F8F4F0;border-radius:14px;padding:14px;margin-bottom:14px;font-size:12px;text-align:left">
@@ -6517,7 +6517,7 @@ if('serviceWorker' in navigator){
     <div id="pw-err" class="pw-err"></div>
     <div class="pw-div">還沒購買？</div>
     <a href="https://chengmeng-shop.netlify.app" class="pw-buy">🛒 立即購買正式版</a>
-    <p class="pw-price">年費 RM 39 · 資料永久保留</p>
+    <p class="pw-price">年費 RM 39 · 記得定期備份資料</p>
   </div>
 </div>
 <button id="cm-fab" onclick="cmShowM()">🔑 輸入啟動碼</button>
@@ -6611,5 +6611,118 @@ function cmCheck(){
 }
 window.addEventListener('load',function(){setTimeout(function(){cmCheck();cmCheckUrlCode();},800)});
 document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){cmCheck();cmCheckUrlCode();},500)});</script>
+
+<style>
+#cm-backup-fab{display:none;position:fixed;bottom:140px;right:16px;z-index:9990;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;border-radius:24px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+#cm-backup-fab.show{display:flex;align-items:center;gap:6px}
+#cm-backup-modal{display:none;position:fixed;inset:0;z-index:99990;background:rgba(0,0,0,.7);align-items:flex-end;justify-content:center;padding:0 0 0 0}
+#cm-backup-modal.show{display:flex}
+#cm-backup-sheet{background:var(--color-bg,#fff);border-radius:20px 20px 0 0;padding:28px 24px 40px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.cm-risk-box{background:#fff8e1;border:1px solid #ffc107;border-radius:12px;padding:16px;margin-bottom:20px}
+.cm-risk-box .risk-title{color:#b45309;font-size:14px;font-weight:700;margin:0 0 10px;display:flex;align-items:center;gap:6px}
+.cm-risk-box .risk-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;font-size:13px;color:#78350f}
+.cm-risk-box .risk-item:last-child{margin-bottom:0}
+.cm-btn-export{width:100%;padding:14px;background:linear-gradient(135deg,#4caf82,#2d8a5e);color:#fff;font-size:15px;font-weight:700;border:none;border-radius:10px;cursor:pointer;margin-bottom:10px}
+.cm-btn-import{width:100%;padding:13px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:15px;font-weight:700;border:none;border-radius:10px;cursor:pointer;margin-bottom:10px}
+.cm-btn-close-sheet{width:100%;padding:11px;background:rgba(0,0,0,.06);color:#666;font-size:14px;border:none;border-radius:10px;cursor:pointer}
+#cm-import-file{display:none}
+</style>
+
+<!-- 備份浮動按鈕 -->
+<button id="cm-backup-fab" onclick="cmShowBackup()">
+  💾 備份資料
+</button>
+
+<!-- 備份 Bottom Sheet -->
+<div id="cm-backup-modal" onclick="if(event.target===this)cmHideBackup()">
+  <div id="cm-backup-sheet">
+    <h3 style="margin:0 0 4px;font-size:18px;font-weight:700">💾 資料備份與還原</h3>
+    <p style="color:#666;font-size:13px;margin:0 0 20px">資料存在手機本機，請定期備份</p>
+
+    <!-- 風險提醒 -->
+    <div class="cm-risk-box">
+      <div class="risk-title">⚠️ 以下情況會導致資料遺失！</div>
+      <div class="risk-item">📱 <span><strong>換手機</strong>——新手機不會有舊資料</span></div>
+      <div class="risk-item">🧹 <span><strong>清瀏覽器快取</strong>——資料就會被清提</span></div>
+      <div class="risk-item">🌐 <span><strong>換常用瀏覽器</strong>——Chrome 换成 Safari 資料就不見了</span></div>
+      <div class="risk-item">🚨 <span><strong>手機故障或遺失</strong>——強制復原就會清掉</span></div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid #ffd54f;font-size:12px;color:#92400e">
+        💡 建議每月備份一次，存在雲端磁碟（Google Drive 等）
+      </div>
+    </div>
+
+    <!-- 匯出 -->
+    <button class="cm-btn-export" onclick="cmExportData()">⬇️ 匹出資料（備份）</button>
+    <!-- 匯入 -->
+    <button class="cm-btn-import" onclick="document.getElementById('cm-import-file').click()">⬆️ 匯入資料（還原）</button>
+    <input type="file" id="cm-import-file" accept=".json" onchange="cmImportData(this)">
+    <button class="cm-btn-close-sheet" onclick="cmHideBackup()">關閉</button>
+  </div>
+</div>
+
+<script>
+// 顯示/隱藏備份面板
+function cmShowBackup(){document.getElementById('cm-backup-modal').classList.add('show')}
+function cmHideBackup(){document.getElementById('cm-backup-modal').classList.remove('show')}
+
+// 匯出：把所有 localStorage 的 cm_ 开頭的 key 全部匯出為 JSON
+function cmExportData(){
+  var data={};
+  var now=new Date();
+  var dateStr=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0')+'-'+now.getDate().toString().padStart(2,'0');
+  for(var i=0;i<localStorage.length;i++){
+    var k=localStorage.key(i);
+    data[k]=localStorage.getItem(k);
+  }
+  var blob=new Blob([JSON.stringify({backup_date:dateStr,version:'1.0',data:data},null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download='澄萐理財小檔_'+dateStr+'.json';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+  setTimeout(function(){cmHideBackup();cmToast('✅ 資料已匯出，請存入 Google Drive 或雲端磁碟！');},300);
+}
+
+// 匯入：讀取 JSON 檔回寫 localStorage
+function cmImportData(input){
+  var file=input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var parsed=JSON.parse(e.target.result);
+      var data=parsed.data||parsed;
+      var count=0;
+      Object.keys(data).forEach(function(k){
+        if(typeof data[k]==='string'){localStorage.setItem(k,data[k]);count++;}
+      });
+      cmHideBackup();
+      cmToast('✅ 還原成功！共匯入 '+count+' 筆資料，即將重新載入...');
+      setTimeout(function(){location.reload();},1800);
+    }catch(err){
+      alert('❌ 檔案格式錯誤，請選擇正確的備份檔案');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Toast 提示
+function cmToast(msg){
+  var t=document.createElement('div');
+  t.textContent=msg;
+  t.style.cssText='position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;z-index:99999;white-space:nowrap;max-width:90vw;text-align:center';
+  document.body.appendChild(t);
+  setTimeout(function(){t.remove();},3000);
+}
+
+// 正式版才顯示備份按鈕
+window.addEventListener('load',function(){
+  setTimeout(function(){
+    if(localStorage.getItem('cm_pro')==='1'){
+      var fab=document.getElementById('cm-backup-fab');
+      if(fab) fab.classList.add('show');
+    }
+  },1000);
+});
+</script>
 </body>
 </html>
