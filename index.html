@@ -7043,21 +7043,7 @@ window.addEventListener('load', function() {
 })();
 </script>
 
-<style>
-#cm-copy-task-wrap button:active{opacity:.8}
-</style>
 <script>
-// 複製任務 patch v2 - 用 setTimeout 確保函數已定義
-setTimeout(function() {
-  if(typeof aRenderTasks !== 'function') return;
-  var _orig = aRenderTasks;
-  window.aRenderTasks = function() {
-    var r = _orig.apply(this, arguments);
-    setTimeout(window.cmInjectCopyBtn, 200);
-    return r;
-  };
-}, 500);
-
 window.cmInjectCopyBtn = function() {
   var tl = document.getElementById('task-list');
   if(!tl) return;
@@ -7067,7 +7053,7 @@ window.cmInjectCopyBtn = function() {
   if(!activeKt) return;
   var oc = activeKt.getAttribute('onclick')||'';
   var digits = oc.replace(/[^0-9]/g,'');
-  if(digits==='') return;
+  if(!digits) return;
   var curIdx = parseInt(digits);
   var k4 = JSON.parse(localStorage.getItem('cm_k4')||'{}');
   var others = Object.keys(k4).filter(function(i){return parseInt(i)!==curIdx;});
@@ -7078,8 +7064,8 @@ window.cmInjectCopyBtn = function() {
   others.forEach(function(ti){
     var btn = document.createElement('button');
     btn.style.cssText = 'width:100%;padding:10px 14px;margin-bottom:6px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-sizing:border-box;';
-    btn.textContent = '📋 將「澄澄」全部任務複製到「' + k4[ti].name + '」';
-    btn.onclick = function(){ window.cmCopyAllTasks(curIdx, parseInt(ti)); };
+    btn.textContent = '📋 將「'+(k4[curIdx]?k4[curIdx].name:curIdx)+'」全部任務複製到「' + k4[ti].name + '」';
+    btn.onclick = (function(f,t){ return function(){ window.cmCopyAllTasks(f,t); }; })(curIdx, parseInt(ti));
     wrap.appendChild(btn);
   });
   tl.appendChild(wrap);
@@ -7090,7 +7076,7 @@ window.cmCopyAllTasks = function(fromIdx, toIdx) {
   var fk=k4[fromIdx], tk=k4[toIdx];
   if(!fk||!tk){alert('找不到孟子');return;}
   if(!fk.tasks||!fk.tasks.length){alert('沒有任務可複製');return;}
-  if(!confirm('將「'+fk.name+'」的全部任務複製到「'+tk.name+'」？
+  if(!confirm('將「'+fk.name+'」全部任務複製到「'+tk.name+'」？
 同名任務會被更新。'))return;
   if(!tk.tasks) tk.tasks=[];
   var cp=0,up=0;
@@ -7104,8 +7090,19 @@ window.cmCopyAllTasks = function(fromIdx, toIdx) {
   alert('✅ 複製 '+cp+' 個、更新 '+up+' 個任務到「'+tk.name+'」！');
 };
 
-// 頁面載入後延遲執行
-setTimeout(function(){ window.cmInjectCopyBtn(); }, 1500);
+setTimeout(function(){
+  if(typeof aRenderTasks==='function' && !aRenderTasks._cmPatched){
+    var _orig = aRenderTasks;
+    window.aRenderTasks = function(){
+      var r = _orig.apply(this,arguments);
+      setTimeout(window.cmInjectCopyBtn, 200);
+      return r;
+    };
+    window.aRenderTasks._cmPatched = true;
+  }
+  window.cmInjectCopyBtn();
+}, 1200);
 </script>
+
 </body>
 </html>
