@@ -5510,38 +5510,22 @@ function initActivation(){
 }
 
 function checkActivation(){
-  const input=document.getElementById('act-code-input');
-  const errEl=document.getElementById('act-error');
-  if(!input) return;
-  const entered=input.value.trim().toUpperCase();
-  const correct=ACTIVATION_CODE.toUpperCase();
-  if(entered===correct){
-    // Save activation
-    localStorage.setItem(ACT_KEY,ACTIVATION_CODE);
-    // Animate success
-    input.style.borderColor='#2A8A6A';
-    input.style.background='#EDFAF5';
-    if(errEl) errEl.textContent='';
-    sfxTaskConfirmed();
-    setTimeout(()=>{
-      const modal=document.getElementById('ov-activation');
-      if(modal){
-        modal.style.transition='opacity 0.5s';
-        modal.style.opacity='0';
-        setTimeout(()=>{ modal.style.display='none'; modal.style.opacity='1'; },500);
-      }
-      sfxWelcome();
-    },600);
-  } else {
-    // Wrong code
-    input.style.borderColor='#F06B6B';
-    input.style.background='#FFF0F0';
-    if(errEl) errEl.textContent='啟動碼不正確，請重新確認';
-    sfxPinError();
-    // Shake animation
-    input.style.animation='shake 0.4s';
-    setTimeout(()=>{ input.style.animation=''; },500);
-  }
+  const input = document.getElementById('ov-activation');
+  const code = input ? input.value.trim().toUpperCase() : '';
+  if(!code){ alert('請輸入啟動碼'); return; }
+  // 驗證格式：CM-YYYY-XXX
+  if(!/^CM-20\d{2}-\d{3}$/.test(code)){ alert('❌ 啟動碼格式不正確，請確認後再試'); return; }
+  // 啟動成功
+  const today = new Date();
+  const expiry = new Date(today);
+  expiry.setFullYear(expiry.getFullYear() + 1);
+  const fmt = d => d.getFullYear()+'/'+(d.getMonth()+1).toString().padStart(2,'0')+'/'+d.getDate().toString().padStart(2,'0');
+  localStorage.setItem('cm_pro','1');
+  localStorage.setItem('cm_activation_code', code);
+  localStorage.setItem('cm_activation_date', fmt(today));
+  localStorage.setItem('cm_expiry_date', fmt(expiry));
+  alert('🎉 啟動成功！歡迎使用澄萌你理財寶貝正式版！\n\n啟動日期：'+fmt(today)+'\n到期日期：'+fmt(expiry)+'\n\n所有功能已解鎖，資料永久保留！');
+  location.reload();
 }
 
 
@@ -5588,11 +5572,19 @@ function showTrialNotice(){
 }
 
 function checkTrialExpiry(){
-  const start=parseInt(localStorage.getItem(TRIAL_KEY)||Date.now());
-  const elapsed=Date.now()-start;
-  const daysLeft=Math.max(0,TRIAL_DAYS-Math.floor(elapsed/(1000*60*60*24)));
-  showTrialBanner(daysLeft);
-  if(daysLeft<=0) showTrialExpired();
+  // 正式版判斷
+  const isPro = localStorage.getItem('cm_pro') === '1';
+  if(isPro){
+    const expiryDate = localStorage.getItem('cm_expiry_date') || '';
+    showProBanner(expiryDate);
+    return;
+  }
+  // 試用版邏輯
+  const start=parseInt(localStorage.getItem('cm_trial_start')||'0');
+  if(!start){localStorage.setItem('cm_trial_start',Date.now());location.reload();return;}
+  const days=Math.ceil((start+7*24*60*60*1000-Date.now())/(24*60*60*1000));
+  if(days<=0){showExpiredBanner();return;}
+  showTrialBanner(days);
 }
 
 function showTrialBanner(daysLeft){
@@ -5609,6 +5601,22 @@ function showTrialBanner(daysLeft){
   document.body.prepend(b);
   const app=document.getElementById('app');
   if(app) app.style.paddingTop='38px';
+}
+
+function showProBanner(expiryDate){
+  const banner = document.getElementById('trial-banner');
+  if(!banner) return;
+  banner.style.background = 'linear-gradient(90deg,#1a6b4a,#2d9b6a)';
+  banner.style.color = '#fff';
+  banner.innerHTML = '<span style="font-weight:700">✅ 正式版</span>　到期日：<strong>' + expiryDate + '</strong>　<span style="opacity:0.8;font-size:12px">資料永久保留</span>';
+}
+
+function showExpiredBanner(){
+  const banner = document.getElementById('trial-banner');
+  if(!banner) return;
+  banner.style.background = '#c0392b';
+  banner.style.color = '#fff';
+  banner.innerHTML = '⚠️ 試用期已結束　<a href="https://chengmeng-shop.netlify.app/#buy" style="color:#ffe;text-decoration:underline">升級正式版 →</a>';
 }
 
 function showTrialExpired(){
