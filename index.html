@@ -2444,21 +2444,45 @@ function aAddTask(){
   const kt=kids[aki].tasks||(kids[aki].tasks=[]);
   kt.push({id:'T'+String(kt.length+1).padStart(2,'0'),icon:icons[kt.length%icons.length],name,desc:'爸媽新增的任務',pts});
   saveK()
-  // 同步任務提醒
+  // 同步任務 toast 提示
   setTimeout(function(){
     var otherKids = kids.filter(function(k,i){return i!==aki;});
-    if(otherKids.length > 0) {
-      var lastTask = kids[aki].tasks[kids[aki].tasks.length-1];
-      if(lastTask && confirm('是否同步「'+lastTask.name+'」到其他孩子？')) {
-        kids.forEach(function(k,i){
-          if(i===aki) return;
-          var exists = k.tasks.some(function(t){return t.id===lastTask.id;});
-          if(!exists) k.tasks.push(JSON.parse(JSON.stringify(lastTask)));
-        });
-        saveK();
-      }
-    }
-  }, 100);;renderTasks();aRenderTasks();g('nt-n').value='';g('nt-p').value='';toast(`✅ 任務「${name}」已新增給 ${kids[aki].name}！`);
+    if(otherKids.length === 0) return;
+    var lastTask = kids[aki].tasks[kids[aki].tasks.length-1];
+    if(!lastTask) return;
+    var otherNames = otherKids.map(function(k){return k.name;}).join('、');
+    // 建立 toast 元素
+    var toast = document.createElement('div');
+    toast.id = 'cm-sync-toast';
+    toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#fff;border-radius:16px;padding:16px 20px;box-shadow:0 8px 32px rgba(0,0,0,0.18);z-index:99999;min-width:280px;max-width:340px;text-align:center;border:2px solid #40916c;';
+    toast.innerHTML = '<div style="font-size:15px;font-weight:700;color:#2d6a4f;margin-bottom:6px;">✅ 任務已新增！</div>'+
+      '<div style="font-size:13px;color:#555;margin-bottom:14px;">要同步「'+lastTask.name+'」到 '+otherNames+' 嗎？</div>'+
+      '<div style="display:flex;gap:10px;justify-content:center;">'+
+        '<button onclick="cmSyncTask()" style="background:linear-gradient(135deg,#2d6a4f,#40916c);color:#fff;border:none;border-radius:10px;padding:8px 20px;font-size:14px;font-weight:700;cursor:pointer;">同步</button>'+
+        '<button onclick="cmDismissSyncToast()" style="background:#f0f0f0;color:#666;border:none;border-radius:10px;padding:8px 20px;font-size:14px;cursor:pointer;">不用</button>'+
+      '</div>';
+    document.body.appendChild(toast);
+    // 定義按鈕工作函數
+    window._pendingSyncTask = lastTask;
+    window.cmSyncTask = function(){
+      var t = window._pendingSyncTask;
+      if(!t) return;
+      kids.forEach(function(k,i){
+        if(i===aki) return;
+        if(!k.tasks.some(function(x){return x.id===t.id;}))
+          k.tasks.push(JSON.parse(JSON.stringify(t)));
+      });
+      saveK();
+      cmDismissSyncToast();
+      toast2('✅ 已同步到 '+otherNames+'!');
+    };
+    window.cmDismissSyncToast = function(){
+      var el = document.getElementById('cm-sync-toast');
+      if(el) el.remove();
+    };
+    // 5 秒後自動消失
+    setTimeout(function(){ cmDismissSyncToast(); }, 5000);
+  }, 400);;renderTasks();aRenderTasks();g('nt-n').value='';g('nt-p').value='';toast(`✅ 任務「${name}」已新增給 ${kids[aki].name}！`);
 }
 function aDel(i){if(!confirm(`確定刪除？`))return;tasks.splice(i,1);saveT();renderTasks();aRenderTasks();toast('任務已刪除');}
 function aDelT(i){
