@@ -2443,7 +2443,22 @@ function aAddTask(){
   const icons=['📖','🌟','🎯','💪','🔤','🏠','🎨','🧩','🌱','✨'];
   const kt=kids[aki].tasks||(kids[aki].tasks=[]);
   kt.push({id:'T'+String(kt.length+1).padStart(2,'0'),icon:icons[kt.length%icons.length],name,desc:'爸媽新增的任務',pts});
-  saveK();renderTasks();aRenderTasks();g('nt-n').value='';g('nt-p').value='';toast(`✅ 任務「${name}」已新增給 ${kids[aki].name}！`);
+  saveK()
+  // 同步任務提醒
+  setTimeout(function(){
+    var otherKids = kids.filter(function(k,i){return i!==aki;});
+    if(otherKids.length > 0) {
+      var lastTask = kids[aki].tasks[kids[aki].tasks.length-1];
+      if(lastTask && confirm('是否同步「'+lastTask.name+'」到其他孩子？')) {
+        kids.forEach(function(k,i){
+          if(i===aki) return;
+          var exists = k.tasks.some(function(t){return t.id===lastTask.id;});
+          if(!exists) k.tasks.push(JSON.parse(JSON.stringify(lastTask)));
+        });
+        saveK();
+      }
+    }
+  }, 100);;renderTasks();aRenderTasks();g('nt-n').value='';g('nt-p').value='';toast(`✅ 任務「${name}」已新增給 ${kids[aki].name}！`);
 }
 function aDel(i){if(!confirm(`確定刪除？`))return;tasks.splice(i,1);saveT();renderTasks();aRenderTasks();toast('任務已刪除');}
 function aDelT(i){
