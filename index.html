@@ -1614,7 +1614,7 @@ function taskSel(id){
     time:nowStr(),
     confirmed:false,
     kidIdx:ki,
-    ts:Date.now()
+    ts:Date.now()*10000+(++_tsCounter)
   });
   saveK();
   hideM('task');
