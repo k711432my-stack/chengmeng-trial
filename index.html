@@ -1539,7 +1539,7 @@ function updateUI(){
 
 function renderTasks(){
   const kt=kidTasks();
-  g('task-list').innerHTML=kt.slice(0,5).map(t=>`<div class="ti" onclick="taskSel('${t.id}')"><div class="tem">${t.icon}</div><div style="flex:1"><div class="tn">${t.name}</div><div class="td">${t.desc}</div></div><div class="tp">+${t.pts}</div></div>`).join('');
+  g('task-list').innerHTML=kt.slice(0,20).map(t=>`<div class="ti" onclick="taskSel('${t.id}')"><div class="tem">${t.icon}</div><div style="flex:1"><div class="tn">${t.name}</div><div class="td">${t.desc}</div></div><div class="tp">+${t.pts}</div></div>`).join('');
 }
 function renderHist(){
   g('hist-list').innerHTML=kid().history.slice(0,6).map(h=>`<div class="hi"><div class="hic">${h.icon}</div><div style="flex:1"><div class="hn">${h.name}</div><div class="hd">${h.date}</div></div><div class="hp ${h.type}">${h.pts>0?'+':''}${h.pts}</div></div>`).join('');
