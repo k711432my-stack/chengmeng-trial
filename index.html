@@ -4654,7 +4654,7 @@ function showRiskEvent(event){
   // Auto-confirm gains after showing
   if(isGain||isNoDividend){
     if(decisionEl) decisionEl.innerHTML=`<div style="text-align:center;padding:10px">
-      <button onclick="riskDecision('accept')" class="btn btp" style="margin-top:8px">我知道了！</button>
+      <button onclick="riskDecision('accept')" class="btn btp" style="margin-top:8px">我知道了！</button><div style="margin-top:10px;text-align:center;"><label style="font-size:13px;color:#888;cursor:pointer;display:inline-flex;align-items:center;gap:6px;"><input type="checkbox" id="cm-no-browser-cb" onchange="cmDismissBrowser(this.checked)" style="cursor:pointer;">不再提醒</label></div>
     </div>`;
   }
 }
