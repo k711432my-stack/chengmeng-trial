@@ -975,6 +975,7 @@ const ACT_KEY='cm_activated';
 const TRIAL_DAYS=14;
 const TRIAL_KEY='cm_trial_start';
 const IS_TRIAL=true;
+let _tsCounter=0;
 const GDRIVE_CLIENT_ID='1002374771147-qlmk1ov17f35qn9f9ik9biig3qrjg0vn.apps.googleusercontent.com';
 const FSPREE='https://formspree.io/f/xaqplnqo';
 const SK='cm_k4',RK='cm_r3',TK='cm_t3',MK='cm_msgs2',EK='cm_earn',CK='cm_char',DRK='cm_dreams';
@@ -4146,11 +4147,11 @@ function renderPendingTasks(){
         <div style="background:var(--pl);color:var(--pd);font-size:12px;font-weight:900;padding:3px 10px;border-radius:10px">+${p.pts}分</div>
       </div>
       <div style="display:flex;gap:7px">
-        <button onclick="confirmTask(${p.kidIdx},'${p.taskId}','${p.date}')" 
+        <button onclick="confirmTask(${p.kidIdx},'${p.taskId}','${p.date}',${p.ts||0})" 
           style="flex:1;padding:9px;border-radius:10px;border:none;background:#34C77B;color:#fff;font-family:Nunito,sans-serif;font-size:12px;font-weight:800;cursor:pointer">
           ✓ 確認完成
         </button>
-        <button onclick="rejectTask(${p.kidIdx},'${p.taskId}','${p.date}')"
+        <button onclick="rejectTask(${p.kidIdx},'${p.taskId}','${p.date}',${p.ts||0})"
           style="flex:1;padding:9px;border-radius:10px;border:none;background:#F06B6B;color:#fff;font-family:Nunito,sans-serif;font-size:12px;font-weight:800;cursor:pointer">
           ✗ 退回
         </button>
