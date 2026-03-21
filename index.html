@@ -1612,7 +1612,8 @@ function taskSel(id){
     date:todayStr,
     time:nowStr(),
     confirmed:false,
-    kidIdx:ki
+    kidIdx:ki,
+    ts:Date.now()
   });
   saveK();
   hideM('task');
@@ -2330,17 +2331,13 @@ function aQ(sign){
   toast(sign>0?`🎉 幫 ${kids[aki].name} 加 ${v} 分！`:`✅ 已扣 ${kids[aki].name} ${v} 分`);
 }
 function aReset(){
-  // Step 1: Backup warning
-  const backupWarn=`⚠️ 重置前請先備份！\n\n建議你先到「後台 → 版本 → 備份與還原」\n匯出備份檔案，以免資料遺失。\n\n你現在要先去備份嗎？`;
-  if(confirm(backupWarn)){
-    // Go to backup tab
-    aTab(5);
-    toast('📦 請先備份，備份完成後再回來重置');
-    return;
-  }
-  // Step 2: Final confirmation
-  if(!confirm(`⚠️ 最後確認！\n\n重置「${kids[aki].name}」後，以下資料將永久清除：\n\n❌ 所有分數歸零\n❌ 歷史記錄清空\n❌ 今日收益歸零\n❌ 打卡紀錄清空\n❌ 夢想存錢筒清空\n❌ 投資走勢圖清空\n\n此操作無法復原！確定繼續？`))return;
-  
+  const kname=kids[aki].name;
+  // 第一層：告知影響
+  if(!confirm('⚠️ 重置孩子資料警告\n\n重置「'+kname+'」後，所有數據將完全清除：\n❌ 所有累積分數\n❌ 今日收益明細\n❌ 待確認任務\n❌ 所有歷史記錄\n\n此動作無法復原！確定繼續？')) return;
+  // 第二層：備份提醒
+  if(!confirm('💾 備份提醒\n\n重置後所有資料無法恢復。\n建議先備份！\n請到「設定 → 備份」進行備份。\n\n已備份完成，要繼續重置嗎？')) return;
+  // 第三層：最終確認
+  if(!confirm('🚨 最後確認\n\n確定要完全重置「'+kname+'」的所有資料？\n此動作無法復原！')) return;
   const k=kids[aki];
   // Keep identity info
   const name=k.name, avatar=k.avatar, photo=k.photo;
@@ -4161,11 +4158,12 @@ function renderPendingTasks(){
     </div>`).join('');
 }
 
-function confirmTask(kidIdx,taskId,date){
+function confirmTask(kidIdx,taskId,date,ts){
   const k=kids[kidIdx];
-  const p=k.pendingTasks.find(p=>p.taskId===taskId&&p.date===date);
-  if(!p)return;
-  p.confirmed=true;
+  const pidx=k.pendingTasks.findIndex(p=>ts&&p.ts?p.ts===ts:(p.taskId===taskId&&p.date===date&&!p.confirmed));
+  if(pidx<0)return;
+  const p=k.pendingTasks[pidx];
+  k.pendingTasks.splice(pidx,1);
   // Give points - add to free account
   const old=k.total;
   k.free+=p.pts;k.total+=p.pts;
@@ -4180,12 +4178,13 @@ function confirmTask(kidIdx,taskId,date){
   updatePendingBadge();
 }
 
-function rejectTask(kidIdx,taskId,date){
+function rejectTask(kidIdx,taskId,date,ts){
   const k=kids[kidIdx];
-  const idx=k.pendingTasks.findIndex(p=>p.taskId===taskId&&p.date===date);
+  const idx=k.pendingTasks.findIndex(p=>ts&&p.ts?p.ts===ts:(p.taskId===taskId&&p.date===date));
   if(idx<0)return;
   const p=k.pendingTasks[idx];
-  k.pendingTasks.splice(idx,1);
+  const rp=k.pendingTasks.splice(idx,1)[0];
+  k.history.unshift({icon:"❌",name:"❌ 退回："+(rp?rp.taskName:""),date:nowStr(),pts:0,type:"reject"});
   saveK();renderPendingTasks();
   toast(`❌ 已退回！請孩子重新確認後再申請 🐻`);
   updatePendingBadge();
