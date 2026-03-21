@@ -5782,7 +5782,25 @@ function showTrialDisclaimer(){
 
 
 // ── Browser float button ──
-function showBrowserTip(){if(localStorage.getItem('cm_browser_dismissed')==='1')return;
+function showBrowserTip(){
+  // 不再提醒保護
+  if(localStorage.getItem('cm_browser_dismissed')==='1'){
+    var b=document.querySelector('button[onclick*="showBrowserTip"],#open-browser-btn');
+    if(b&&b.parentElement)b.parentElement.style.display='none';
+    return;
+  }
+  // 注入 checkbox
+  setTimeout(function(){
+    var btn=Array.from(document.querySelectorAll('button')).find(function(b){return b.textContent.includes('預設瀏覽器');});
+    if(!btn)return;
+    var wrap=btn.parentElement;
+    if(!wrap||document.getElementById('cm-no-browser-wrap'))return;
+    var div=document.createElement('div');
+    div.id='cm-no-browser-wrap';
+    div.style.cssText='display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px;';
+    div.innerHTML='<label style="font-size:12px;color:#888;cursor:pointer;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="cm-no-browser-cb" onchange="cmDismissBrowser(this.checked)"> 不再提醒</label>';
+    wrap.appendChild(div);
+  },500);if(localStorage.getItem('cm_browser_dismissed')==='1')return;
   document.getElementById('browser-tip-modal').style.display='flex';
 }
 (function(){
@@ -7223,6 +7241,18 @@ if(localStorage.getItem('cm_user_registered') !== '1'){setTimeout(function(){var
   var el=document.getElementById('cm-reg-js');
   if(el){try{(0,eval)(el.innerHTML);}catch(e){console.error('reg err:',e);}}
 })();
+</script>
+
+<script>
+function cmDismissBrowser(checked){
+  if(checked){
+    localStorage.setItem('cm_browser_dismissed','1');
+    var btn=Array.from(document.querySelectorAll('button')).find(function(b){return b.textContent.includes('預設瀏覽器');});
+    if(btn&&btn.parentElement)btn.parentElement.style.display='none';
+  } else {
+    localStorage.removeItem('cm_browser_dismissed');
+  }
+}
 </script>
 </body>
 </html>
