@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#D2964F">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">h
 <meta name="apple-mobile-web-app-title" content="澄萌理財">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
@@ -2328,6 +2328,7 @@ function aQ(sign){
   k.free+=delta;k.total+=delta;
   k.history.unshift({icon:sign>0?'⭐':'💸',name:sign>0?`爸媽加分 +${v}`:`爸媽扣分 -${v}`,date:nowStr(),pts:delta,type:sign>0?'pos':'neg'});
   if(sign>0)checkMs(k,oldTotal);
+  earnLog.push({kidIdx:aki,amount:delta,type:sign>0?'task':'deduct',date:nowStr(),desc:sign>0?kids[aki].name+' 得分':kids[aki].name+' 扣分'});saveEarnLog();
   aLoad();saveK();if(ki===aki)updateUI();
   toast(sign>0?`🎉 幫 ${kids[aki].name} 加 ${v} 分！`:`✅ 已扣 ${kids[aki].name} ${v} 分`);
 }
@@ -3742,6 +3743,7 @@ function renderTodayEarnDetail(){
     task:{icon:'✅',label:'任務打卡',total:0},
     dream:{icon:'🎯',label:'夢想存錢筒',total:0},
     dividend:{icon:'💰',label:'投資配息',total:0},
+    deduct:{icon:'❌',label:'扣分記錄',total:0},
   };
   
   todayLogs.forEach(e=>{
@@ -3754,7 +3756,7 @@ function renderTodayEarnDetail(){
   const el=g('todayearn-body');
   if(!el)return;
   
-  if(total<=0){
+  if(total===0){
     el.innerHTML=`<div style="text-align:center;padding:24px;color:var(--mu)">
       <div style="font-size:40px;margin-bottom:10px">🌱</div>
       <div style="font-size:14px;font-weight:800">今天還沒有收益</div>
@@ -7042,7 +7044,7 @@ setTimeout(window.cmInjectCopyBtn,1500);</template>
       <label style="font-size:13px;font-weight:600;color:#333;">孩子名字 <span style="color:red;">*</span></label>
       <input id="cm-reg-kids" type="text" placeholder="例：小明、小芒（可填多個）" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;margin-top:4px;box-sizing:border-box;outline:none;">
     </div>
-    <div style="margin:0 0 14px;padding:12px;background:#f0fff4;border-radius:10px;border:1px solid #b7ebc8;text-align:center;"><div style="font-size:13px;color:#2d6a4f;font-weight:700;margin-bottom:8px;">👋 先加 Kelly 的 LINE 官方帳號好友</div><div style="font-size:12px;color:#555;margin-bottom:10px;">加好友後才能收到正式版優惠與更新通知 💕</div><a href="https://line.me/R/ti/p/@730oquwu" target="_blank" style="display:inline-block;background:#06c755;color:#fff;text-decoration:none;padding:8px 20px;border-radius:20px;font-size:13px;font-weight:700;margin-bottom:8px;">➕ 加 @730oquwu 為好友</a><div style="font-size:11px;color:#888;margin-top:4px;">📱 點擊上方按鈕即可加好友</div></div><button onclick="cmRegSubmit()" style="width:100%;padding:12px;background:linear-gradient(135deg,#2d6a4f,#40916c);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">開始使用 🚀</button>
+    <button onclick="cmRegSubmit()" style="width:100%;padding:12px;background:linear-gradient(135deg,#2d6a4f,#40916c);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">開始使用 🚀</button>
     <p id="cm-reg-err" style="color:red;font-size:12px;text-align:center;margin:8px 0 0;display:none;">請先填寫 LINE ID 和孩子名字</p>
   </div>
 </div>
@@ -7080,6 +7082,16 @@ setTimeout(window.cmInjectCopyBtn,1500);</template>
   }).catch(function(e){ console.log('form err:', e); });
   
   document.getElementById('cm-reg-modal').style.display='none';
+  var so=document.createElement('div');so.id='cm-success-overlay';
+  so.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;';
+  so.innerHTML='<div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:340px;width:90%;text-align:center;">'
+    +'<div style="font-size:48px;margin-bottom:10px">✅</div>'
+    +'<h2 style="font-size:18px;color:#2d6a4f;margin:0 0 8px">登記成功！</h2>'
+    +'<p style="font-size:13px;color:#666;margin:0 0 20px;line-height:1.6">Kelly 會盡快與您聯絡 💌<br>加 LINE 好友接收正式版優惠通知</p>'
+    +'<a href="https://line.me/R/ti/p/@730oquwu" target="_blank" style="display:block;padding:13px;border-radius:12px;background:#06C755;color:#fff;font-weight:700;font-size:15px;text-decoration:none;margin-bottom:10px">➕ 加 @730oquwu 為好友</a>'
+    +'<button onclick="document.getElementById('cm-success-overlay').remove()" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:10px;background:#fff;font-size:13px;color:#666;cursor:pointer">稍後再加</button>'
+    +'</div>';
+  document.body.appendChild(so);
 };
 
 if(localStorage.getItem('cm_user_registered') !== '1'){setTimeout(function(){var m=document.getElementById('cm-reg-modal');if(m)m.style.display='flex';},2000);}</template>
