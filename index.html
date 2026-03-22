@@ -5664,6 +5664,9 @@ function showExpiredBanner(){
   banner.innerHTML = '⚠️ 試用期已結束　<a href="https://chengmeng-shop.netlify.app/#buy" style="color:#ffe;text-decoration:underline;font-weight:bold">升級正式版 →</a>';
   document.body.prepend(banner);
 }
+  var pw=document.getElementById('cm-paywall');
+  if(pw){pw.style.cssText+=';display:flex!important;';document.querySelectorAll('.nb,.page').forEach(function(el){el.style.pointerEvents='none';});pw.style.pointerEvents='all';}
+
 
 function showTrialExpired(){
   const old=document.getElementById('trial-expired-overlay');
