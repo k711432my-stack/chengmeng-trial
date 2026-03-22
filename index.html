@@ -5615,7 +5615,7 @@ function checkTrialExpiry(){
   // 試用版邏輯
   const start=parseInt(localStorage.getItem('cm_trial_start')||'0');
   if(!start){localStorage.setItem('cm_trial_start',Date.now());location.reload();return;}
-  const days=Math.ceil((start+7*24*60*60*1000-Date.now())/(24*60*60*1000));
+  const days=Math.ceil((start+TRIAL_DAYS*24*60*60*1000-Date.now())/(24*60*60*1000));
   if(days<=0){showExpiredBanner();return;}
   showTrialBanner(days);
 }
