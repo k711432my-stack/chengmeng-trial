@@ -5644,6 +5644,15 @@ function showProBanner(expiryDate){
   banner.style.cssText = 'width:100%;padding:7px 14px;text-align:center;font-size:13px;position:sticky;top:0;z-index:999;background:linear-gradient(90deg,#1a6b4a,#2d9b6a);color:#fff;font-weight:500;';
   banner.innerHTML = '✅ <strong>正式版</strong>　到期日：<strong>' + expiryDate + '</strong>　<span style="opacity:0.75;font-size:12px">記得定期備份資料</span>';
   document.body.prepend(banner);
+  // 顯示付費牆，鎖住 App
+  var pw=document.getElementById('cm-paywall');
+  if(pw){
+    pw.style.removeProperty('display');
+    pw.style.setProperty('display','flex','important');
+  }
+  // 移除所有頁面的互動，防止繼續使用
+  document.querySelectorAll('.nb,.page').forEach(function(el){el.style.pointerEvents='none';});
+  pw && (pw.style.pointerEvents='all');
 }
 
 function showExpiredBanner(){
