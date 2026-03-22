@@ -7089,5 +7089,59 @@ function cmDismissBrowser(checked){
   }
 }
 </script>
-</body>
-</html>
+
+<script>
+// ===== 通知爸媽按鈕 =====
+(function(){
+  // 建立按鈕
+  function injectNotifyBtn(){
+    if(document.getElementById('cm-notify-btn')) return;
+    var taskList = document.getElementById('task-list');
+    if(!taskList) return;
+    var btn = document.createElement('button');
+    btn.id = 'cm-notify-btn';
+    btn.style.cssText = 'display:block;width:calc(100% - 32px);margin:12px 16px 4px;padding:12px;background:linear-gradient(135deg,#06c755,#04a544);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;';
+    btn.innerHTML = '💬 通知爸媽確認任務';
+    btn.onclick = cmNotifyParent;
+    taskList.parentElement.insertBefore(btn, taskList.nextSibling);
+  }
+
+  // 通知函數：產生 LINE 訊息內容
+  window.cmNotifyParent = function(){
+    var k = kids[ki];
+    var pending = (k.pendingTasks||[]).filter(function(p){ return !p.confirmed; });
+    if(pending.length === 0){
+      toast('目前沒有待確認的任務！');
+      return;
+    }
+    // 產生訊息
+    var lines = ['🐻 澄萌你理財寶貝'];
+    lines.push('');
+    lines.push('⌚ ' + new Date().toLocaleDateString('zh-TW') + ' ' + k.name + ' 完成了以下任務：');
+    lines.push('');
+    pending.forEach(function(p){
+      lines.push('✅ ' + p.taskName + ' +' + p.pts + '分');
+    });
+    lines.push('');
+    lines.push('請爸媽進入 App 後台確認！');
+    var msg = encodeURIComponent(lines.join('
+'));
+    // 開啟 LINE 分享
+    var lineUrl = 'https://line.me/R/msg/text/?' + msg;
+    window.open(lineUrl, '_blank');
+  };
+
+  // 監聽頁面切換，确保按鈕在首頁時顯示
+  var origGoPage = window.goPage;
+  window.goPage = function(id, el){
+    origGoPage && origGoPage(id, el);
+    setTimeout(injectNotifyBtn, 100);
+  };
+
+  // 頁面載入後马上注入
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(injectNotifyBtn, 500);
+  });
+})();
+</script>
+</body></html>
