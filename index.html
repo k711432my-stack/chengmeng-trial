@@ -7042,7 +7042,7 @@ setTimeout(window.cmInjectCopyBtn,1500);</template>
       <label style="font-size:13px;font-weight:600;color:#333;">孩子名字 <span style="color:red;">*</span></label>
       <input id="cm-reg-kids" type="text" placeholder="例：小明、小芒（可填多個）" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;margin-top:4px;box-sizing:border-box;outline:none;">
     </div>
-    <button onclick="cmRegSubmit()" style="width:100%;padding:12px;background:linear-gradient(135deg,#2d6a4f,#40916c);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">開始使用 🚀</button>
+    <div style="margin:0 0 14px;padding:12px;background:#f0fff4;border-radius:10px;border:1px solid #b7ebc8;text-align:center;"><div style="font-size:13px;color:#2d6a4f;font-weight:700;margin-bottom:8px;">👋 先加 Kelly 的 LINE 官方帳號好友</div><div style="font-size:12px;color:#555;margin-bottom:10px;">加好友後才能收到正式版優惠與更新通知 💕</div><a href="https://line.me/R/ti/p/@730oquwu" target="_blank" style="display:inline-block;background:#06c755;color:#fff;text-decoration:none;padding:8px 20px;border-radius:20px;font-size:13px;font-weight:700;margin-bottom:8px;">➕ 加 @730oquwu 為好友</a><div style="font-size:11px;color:#888;margin-top:4px;">📱 點擊上方按鈕即可加好友</div></div><button onclick="cmRegSubmit()" style="width:100%;padding:12px;background:linear-gradient(135deg,#2d6a4f,#40916c);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">開始使用 🚀</button>
     <p id="cm-reg-err" style="color:red;font-size:12px;text-align:center;margin:8px 0 0;display:none;">請先填寫 LINE ID 和孩子名字</p>
   </div>
 </div>
@@ -7067,7 +7067,7 @@ setTimeout(window.cmInjectCopyBtn,1500);</template>
   localStorage.setItem('cm_user_info', JSON.stringify(regData));
   
   // 用 formsubmit.co 免費轉寄到 email（不需要 token）
-  fetch('https://formsubmit.co/ajax/kelly@k711432.my.gmail.com', {
+  fetch('https://formsubmit.co/ajax/kelly@k711432.my', {
     method: 'POST',
     headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
     body: JSON.stringify({
